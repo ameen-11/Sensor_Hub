@@ -1,4 +1,4 @@
-/* eslint-disable react-native/no-inline-styles */
+    /* eslint-disable react-native/no-inline-styles */
 import {
   SafeAreaView,
   // StyleSheet,
@@ -11,8 +11,9 @@ import React from 'react';
 import Spacing from '../constants/Spacing';
 import FontSize from '../constants/FontSize';
 import Colors from '../constants/Colors';
-import Font from '../constants/Font';
+
 import auth from '@react-native-firebase/auth';
+
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types';
 
@@ -65,14 +66,14 @@ const SignIn: React.FC<Props> = ({navigation}) => {
             style={{
               fontSize: FontSize.xLarge,
               color: Colors.primary,
-              fontFamily: Font['poppins-bold'],
+              fontFamily: 'Poppins-Bold',
               marginVertical: Spacing * 3,
             }}>
             Login here
           </Text>
           <Text
             style={{
-              fontFamily: Font['poppins-semiBold'],
+              fontFamily: 'Poppins-SemiBold',
               fontSize: FontSize.large,
               maxWidth: '60%',
               textAlign: 'center',
@@ -90,7 +91,7 @@ const SignIn: React.FC<Props> = ({navigation}) => {
             value={value.email}
             onChangeText={text => setValue({...value, email: text})}
             style={{
-              fontFamily: Font['poppins-regular'],
+              fontFamily: 'Poppins-Regular',
               fontSize: FontSize.small,
               padding: Spacing * 2,
               backgroundColor: Colors.lightPrimary,
@@ -104,7 +105,7 @@ const SignIn: React.FC<Props> = ({navigation}) => {
             secureTextEntry={true}
             onChangeText={text => setValue({...value, password: text})}
             style={{
-              fontFamily: Font['poppins-regular'],
+              fontFamily: 'Poppins-Regular',
               fontSize: FontSize.small,
               padding: Spacing * 2,
               backgroundColor: Colors.lightPrimary,
@@ -117,7 +118,7 @@ const SignIn: React.FC<Props> = ({navigation}) => {
         <View>
           <Text
             style={{
-              fontFamily: Font['poppins-semiBold'],
+              fontFamily: 'Poppins-SemiBold',
               fontSize: FontSize.small,
               color: Colors.primary,
               alignSelf: 'flex-end',
@@ -143,7 +144,7 @@ const SignIn: React.FC<Props> = ({navigation}) => {
           }}>
           <Text
             style={{
-              fontFamily: Font['poppins-bold'],
+              fontFamily: 'Poppins-Bold',
               color: Colors.onPrimary,
               textAlign: 'center',
               fontSize: FontSize.large,
@@ -159,7 +160,7 @@ const SignIn: React.FC<Props> = ({navigation}) => {
           }}>
           <Text
             style={{
-              fontFamily: Font['poppins-semiBold'],
+              fontFamily: 'Poppins-SemiBold',
               color: Colors.text,
               textAlign: 'center',
               fontSize: FontSize.small,
@@ -174,7 +175,7 @@ const SignIn: React.FC<Props> = ({navigation}) => {
           }}>
           <Text
             style={{
-              fontFamily: Font['poppins-semiBold'],
+              fontFamily: 'Poppins-SemiBold',
               color: Colors.primary,
               textAlign: 'center',
               fontSize: FontSize.small,

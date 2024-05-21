@@ -17,6 +17,7 @@ export type RootStackParamList = {
   SignUp: undefined;
   Home: undefined;
   SensorMap: undefined;
+  Test: undefined;
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =
