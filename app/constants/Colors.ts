@@ -15,4 +15,6 @@ export default {
   borderWithOpacity: "#1f41bb",
   lightPrimary: lightBlue,
   gray: gray,
+  blue:blue,
+  black:black,
 };

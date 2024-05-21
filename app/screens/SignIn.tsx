@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React from 'react';
+import {React,useState,useEffect} from 'react';
 import Spacing from '../constants/Spacing';
 import FontSize from '../constants/FontSize';
 import Colors from '../constants/Colors';
@@ -15,6 +15,12 @@ import Font from '../constants/Font';
 import auth from '@react-native-firebase/auth';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types';
+import {
+  GoogleOneTapSignIn,
+    statusCodes,
+    isErrorWithCode,
+    GoogleSignin
+} from '@react-native-google-signin/google-signin';
 
 type SingInScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -26,7 +32,7 @@ type Props = {
 };
 
 const SignIn: React.FC<Props> = ({navigation}) => {
-  const [value, setValue] = React.useState({
+  const [value, setValue] = useState({
     email: '',
     password: '',
     error: '',
@@ -45,8 +51,44 @@ const SignIn: React.FC<Props> = ({navigation}) => {
       setValue({...value, error: error.message});
       return;
     }
+
+  };
+   const googlesignin=()=>{
+      useEffect(() =>{
+      GoogleSignin.configure({webClientId:
+      '1038756604966-muts5me76818hlll59vti412toacuesg.apps.googleusercontent.com'
+      });
+    },[]);
+    };
+const [userInfo,setUserInfo]=useState(null);
+   GsignIn = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const usrInfo = await GoogleOneTapSignIn.signIn();
+      setUserInfo({usrInfo});
+    } catch (error) {
+
+      if (error.code==statusCodes.NO_SAVED_CREDENTIAL_FOUND) {
+
+        }
+        else if(error.code==statusCodes.SIGN_IN_CANCELLED){
+        }
+        else if(error.code==statusCodes.ONE_TAP_START_FAILED){
+                }
+        else if(error.code==statusCodes.PLAY_SERVICES_NOT_AVAILABLE){
+
+                                }
+
+        else{
+        }
+    }
   };
 
+
+getCurrentUser = async () => {
+   const currentUser = await GoogleSignin.getCurrentUser();
+   setState({ currentUser });
+};
   const signUp = () => {
     navigation.navigate('SignUp');
   };
@@ -189,11 +231,16 @@ const SignIn: React.FC<Props> = ({navigation}) => {
               justifyContent: 'center',
             }}>
             <TouchableOpacity
+            onPress={()=>{
+            GsignIn();
+            }
+            }
               style={{
                 padding: Spacing,
-                backgroundColor: Colors.gray,
+                backgroundColor: Colors.primary,
                 borderRadius: Spacing / 2,
                 marginHorizontal: Spacing,
+
               }}>
               {/* <Ionicons
                 name="logo-google"
@@ -207,6 +254,7 @@ const SignIn: React.FC<Props> = ({navigation}) => {
                 backgroundColor: Colors.gray,
                 borderRadius: Spacing / 2,
                 marginHorizontal: Spacing,
+
               }}>
               {/* <Ionicons
                 name="logo-apple"
