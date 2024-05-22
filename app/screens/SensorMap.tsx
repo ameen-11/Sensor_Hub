@@ -37,8 +37,6 @@ const SensorMap : React.FC<Props> = ({navigation}) => {
                 }
 
             } catch(error) {
-                //console.log('Unable to check Permissions');
-               // console.log(error);
                 navigation.navigate('Home');
             }
         };
@@ -50,9 +48,6 @@ const SensorMap : React.FC<Props> = ({navigation}) => {
 
     return (
         <SafeAreaView>
-            <View>
-                <Text>This is maps screen</Text>
-            </View>
             <View
                 style={styles.container}
             >
@@ -78,8 +73,6 @@ const styles = StyleSheet.create({
     map: {
         height: '100%',
         width: '100%',
-        margin: 10,
-        padding: 10,
         justifyContent: 'flex-end',
         borderWidth:2,
     },
