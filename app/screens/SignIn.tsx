@@ -16,7 +16,7 @@ import auth from '@react-native-firebase/auth';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
-
+import Home from './screens/Home';
 type SingInScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'SignIn'
@@ -55,15 +55,15 @@ const SignIn: React.FC<Props> = ({navigation}) => {
   };
 React.useEffect(() => {
     GoogleSignin.configure({
-      webClientId: "799001895781-l03tk5816d294si6655kifcumtdf19lj.apps.googleusercontent.com",
+      webClientId: "799001895781-d5j13sakr32ihoatonnn8mvq1janugso.apps.googleusercontent.com",
       offlineAccess: true
     });
   }, [])
   const GoogleSignUp = async () => {
       try {
         await GoogleSignin.hasPlayServices();
-        await GoogleSignin.signIn().then(result => { console.log(error) });
-        navigation.navigate('Home');
+        await GoogleSignin.signIn().then(result => { console.log(result) });
+        navigation.navigate('SignIn');
       } catch (error) {
         if (error.code === statusCodes.SIGN_IN_CANCELLED) {
           // user cancelled the login flow
