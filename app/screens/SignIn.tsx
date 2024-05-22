@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {React,useState,useEffect} from 'react';
+import React from 'react';
 import Spacing from '../constants/Spacing';
 import FontSize from '../constants/FontSize';
 import Colors from '../constants/Colors';
@@ -15,12 +15,7 @@ import Font from '../constants/Font';
 import auth from '@react-native-firebase/auth';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types';
-import {
-  GoogleOneTapSignIn,
-    statusCodes,
-    isErrorWithCode,
-    GoogleSignin
-} from '@react-native-google-signin/google-signin';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 
 type SingInScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -32,13 +27,14 @@ type Props = {
 };
 
 const SignIn: React.FC<Props> = ({navigation}) => {
-  const [value, setValue] = useState({
+  const [value, setValue] = React.useState({
     email: '',
     password: '',
     error: '',
   });
 
   const signIn = async () => {
+
     if (value.email === '' || value.password === '') {
       setValue({...value, error: 'Please fill all the fields.'});
       return;
@@ -53,45 +49,36 @@ const SignIn: React.FC<Props> = ({navigation}) => {
     }
 
   };
-   const googlesignin=()=>{
-      useEffect(() =>{
-      GoogleSignin.configure({webClientId:
-      '1038756604966-muts5me76818hlll59vti412toacuesg.apps.googleusercontent.com'
-      });
-    },[]);
-    };
-const [userInfo,setUserInfo]=useState(null);
-   GsignIn = async () => {
-    try {
-      await GoogleSignin.hasPlayServices();
-      const usrInfo = await GoogleOneTapSignIn.signIn();
-      setUserInfo({usrInfo});
-    } catch (error) {
 
-      if (error.code==statusCodes.NO_SAVED_CREDENTIAL_FOUND) {
-
-        }
-        else if(error.code==statusCodes.SIGN_IN_CANCELLED){
-        }
-        else if(error.code==statusCodes.ONE_TAP_START_FAILED){
-                }
-        else if(error.code==statusCodes.PLAY_SERVICES_NOT_AVAILABLE){
-
-                                }
-
-        else{
-        }
-    }
-  };
-
-
-getCurrentUser = async () => {
-   const currentUser = await GoogleSignin.getCurrentUser();
-   setState({ currentUser });
-};
   const signUp = () => {
     navigation.navigate('SignUp');
   };
+React.useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: "799001895781-l03tk5816d294si6655kifcumtdf19lj.apps.googleusercontent.com",
+      offlineAccess: true
+    });
+  }, [])
+  const GoogleSignUp = async () => {
+      try {
+        await GoogleSignin.hasPlayServices();
+        await GoogleSignin.signIn().then(result => { console.log(error) });
+        navigation.navigate('Home');
+      } catch (error) {
+        if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+          // user cancelled the login flow
+          alert('User cancelled the login flow !');
+        } else if (error.code === statusCodes.IN_PROGRESS) {
+          alert('Signin in progress');
+          // operation (f.e. sign in) is in progress already
+        } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+          alert('Google play services not available or outdated !');
+          // play services not available or outdated
+        } else {
+          console.log(error)
+        }
+      }
+    };
 
   return (
     <SafeAreaView>
@@ -231,17 +218,14 @@ getCurrentUser = async () => {
               justifyContent: 'center',
             }}>
             <TouchableOpacity
-            onPress={()=>{
-            GsignIn();
-            }
-            }
               style={{
-                padding: Spacing,
-                backgroundColor: Colors.primary,
-                borderRadius: Spacing / 2,
+                padding: Spacing*2,
+                backgroundColor: Colors.gray,
+                borderRadius: Spacing/2,
                 marginHorizontal: Spacing,
-
-              }}>
+       }}
+               onPress={GoogleSignUp}
+              >
               {/* <Ionicons
                 name="logo-google"
                 color={Colors.text}
@@ -250,11 +234,10 @@ getCurrentUser = async () => {
             </TouchableOpacity>
             <TouchableOpacity
               style={{
-                padding: Spacing,
+                padding: Spacing*2,
                 backgroundColor: Colors.gray,
                 borderRadius: Spacing / 2,
                 marginHorizontal: Spacing,
-
               }}>
               {/* <Ionicons
                 name="logo-apple"
@@ -264,7 +247,7 @@ getCurrentUser = async () => {
             </TouchableOpacity>
             <TouchableOpacity
               style={{
-                padding: Spacing,
+                padding: Spacing*2,
                 backgroundColor: Colors.gray,
                 borderRadius: Spacing / 2,
                 marginHorizontal: Spacing,

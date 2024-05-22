@@ -1964,7 +1964,7 @@
   dependencies:
     serve-static "^1.13.1"
 
-"@react-native-community/cli-doctor@13.6.6":
+"@react-native-community/cli-doctor@^13.6.6", "@react-native-community/cli-doctor@13.6.6":
   version "13.6.6"
   resolved "https://registry.npmjs.org/@react-native-community/cli-doctor/-/cli-doctor-13.6.6.tgz"
   integrity sha512-TWZb5g6EmQe2Ua2TEWNmyaEayvlWH4GmdD9ZC+p8EpKFpB1NpDGMK6sXbpb42TDvwZg5s4TDRplK0PBEA/SVDg==
