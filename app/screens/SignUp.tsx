@@ -11,7 +11,6 @@ import React from 'react';
 import Spacing from '../constants/Spacing';
 import FontSize from '../constants/FontSize';
 import Colors from '../constants/Colors';
-import Font from '../constants/Font';
 import auth from '@react-native-firebase/auth';
 
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
@@ -61,14 +60,14 @@ const SignUp: React.FC<Props> = ({navigation}) => {
             style={{
               fontSize: FontSize.xLarge,
               color: Colors.primary,
-              fontFamily: Font['poppins-bold'],
+              fontFamily: 'poppins-bold',
               marginVertical: Spacing * 3,
             }}>
             Create a new account
           </Text>
           <Text
             style={{
-              fontFamily: Font['poppins-semiBold'],
+              fontFamily: 'poppins-semiBold',
               fontSize: FontSize.large,
               maxWidth: '60%',
               textAlign: 'center',
@@ -86,7 +85,7 @@ const SignUp: React.FC<Props> = ({navigation}) => {
             value={value.email}
             onChangeText={text => setValue({...value, email: text})}
             style={{
-              fontFamily: Font['poppins-regular'],
+              fontFamily: 'poppins-regular',
               fontSize: FontSize.small,
               padding: Spacing * 2,
               backgroundColor: Colors.lightPrimary,
@@ -100,7 +99,7 @@ const SignUp: React.FC<Props> = ({navigation}) => {
             secureTextEntry={true}
             onChangeText={text => setValue({...value, password: text})}
             style={{
-              fontFamily: Font['poppins-regular'],
+              fontFamily: 'poppins-regular',
               fontSize: FontSize.small,
               padding: Spacing * 2,
               backgroundColor: Colors.lightPrimary,
@@ -113,7 +112,7 @@ const SignUp: React.FC<Props> = ({navigation}) => {
         <View>
           <Text
             style={{
-              fontFamily: Font['poppins-semiBold'],
+              fontFamily: 'poppins-semiBold',
               fontSize: FontSize.small,
               color: Colors.primary,
               alignSelf: 'flex-end',
@@ -139,7 +138,7 @@ const SignUp: React.FC<Props> = ({navigation}) => {
           }}>
           <Text
             style={{
-              fontFamily: Font['poppins-bold'],
+              fontFamily: 'poppins-bold',
               color: Colors.onPrimary,
               textAlign: 'center',
               fontSize: FontSize.large,
@@ -156,7 +155,7 @@ const SignUp: React.FC<Props> = ({navigation}) => {
           }}>
           <Text
             style={{
-              fontFamily: Font['poppins-semiBold'],
+              fontFamily: 'poppins-semiBold',
               color: Colors.text,
               textAlign: 'center',
               fontSize: FontSize.small,
@@ -171,7 +170,7 @@ const SignUp: React.FC<Props> = ({navigation}) => {
           }}>
           <Text
             style={{
-              fontFamily: Font['poppins-semiBold'],
+              fontFamily: 'poppins-semiBold',
               color: Colors.primary,
               textAlign: 'center',
               fontSize: FontSize.small,
