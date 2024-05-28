@@ -41,7 +41,7 @@ const SignIn: React.FC<Props> = ({navigation}) => {
 
     try {
       await auth().signInWithEmailAndPassword(value.email, value.password);
-      navigation.navigate('Home');
+      navigation.navigate('HomeDrawer');
     } catch (error: any) {
       setValue({...value, error: error.message});
       return;

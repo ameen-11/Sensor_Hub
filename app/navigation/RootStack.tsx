@@ -1,8 +1,7 @@
 import React from 'react';
-import {NativeStackNavigationProp, createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 
-import Icon from "react-native-vector-icons/Entypo";
 
 import SensorMap from '../screens/SensorMap';
 import Test from '../screens/Test';
@@ -11,91 +10,82 @@ import Colors from '../constants/Colors';
 import Home from '../screens/Home';
 import Settings from '../screens/Settings';
 import Profile from '../screens/Profile';
-import { DrawerActions} from '@react-navigation/native';
-import { RootStackParamList } from '../types';
+import FontSize from '../constants/FontSize';
 
 const Drawer = createDrawerNavigator();
 const Stack = createNativeStackNavigator();
 
-type UserStackNavigation = NativeStackNavigationProp<
-RootStackParamList
->;
+const HomeDrawer = () => {
+    return (
+        <Drawer.Navigator
+            initialRouteName="HomeDrawer"
+            screenOptions={{
+                headerStyle: {
+                    backgroundColor: Colors.primary,
+                },
+                headerTitleStyle : {
+                    fontSize : FontSize.large,
+                }
+            }}   
+        >
 
-type Props = {
-    navigation: UserStackNavigation;
+            <Drawer.Screen 
+                name="Home" 
+                component={Home} 
+                options={{
+                    headerTitle: "Home",
+                }}
+            /> 
+
+            <Drawer.Screen 
+                name="Profile" 
+                component={Profile}
+            />
+
+            <Drawer.Screen 
+                name="Settings" 
+                component={Settings} 
+            />
+        </Drawer.Navigator>
+    );
 };
 
-//navigation using stacks
-const UserStack : React.FC<Props> = ({navigation}) => {
+
+const RootStack = () => {
     return (
-        <Stack.Navigator
+        <Stack.Navigator 
+            initialRouteName="HomeDrawer"
             screenOptions={{
-                headerLeft : () => {
-                    return (
-                        <Icon
-                            name="menu"
-                            onPress={()=> navigation.dispatch(DrawerActions.toggleDrawer())}
-                            size={30}
-                            color="white"
-                        />
-                    );
-                }
-            }}
+                headerStyle: {
+                    backgroundColor: Colors.primary,
+                } 
+            }}   
         >
             <Stack.Screen 
-                name="Home"
-                component={Home}
+                name="HomeDrawer"
+                component={HomeDrawer}
                 options={{
-                    headerTitle: () => <Header name="Home"/>,
-                    headerStyle: {
-                        backgroundColor: Colors.primary,
-                    }
+                    headerShown: false
                 }}
             />
+
             <Stack.Screen 
                 name="SensorMap"
                 component={SensorMap}
                 options={{
                     headerTitle: () => <Header name="Sensor Map"/>,
-                    headerStyle: {
-                        backgroundColor: Colors.primary,
-                    }
                 }}
             />
+
             <Stack.Screen
                 name="Test"
                 component={Test}
                 options={{
                     headerTitle: () => <Header name="Test"/>,
-                    headerStyle: {
-                        backgroundColor: Colors.primary,
-                    }
                 }}
-
             /> 
+
         </Stack.Navigator>
-    );
-};
-
-//navigation in the drawer
-const RootStack = () => {
-    return (
-        <Drawer.Navigator
-            initialRouteName="UserStack"
-        >
-            <Drawer.Screen 
-                name="UserStack" 
-                component={UserStack} 
-                options={{
-                    headerShown: false,
-                }}
-            /> 
-            <Drawer.Screen 
-                name="Profile" 
-                component={Profile}
-            />
-            <Drawer.Screen name="Settings" component={Settings} />
-        </Drawer.Navigator>
     );
 };
 
