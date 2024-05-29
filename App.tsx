@@ -9,7 +9,8 @@ import React from 'react';
 import RootNavigation from './app/navigation/Index';
 import {DefaultTheme, NavigationContainer} from '@react-navigation/native';
 import Colors from './app/constants/Colors';
-import Home from './screens/Home';
+import 'react-native-gesture-handler';
+
 const theme = {
   ...DefaultTheme,
   colors: {
