@@ -16,7 +16,8 @@ import auth from '@react-native-firebase/auth';
 
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types';
-
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import Home from './screens/Home';
 type SingInScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'SignIn'
@@ -34,6 +35,7 @@ const SignIn: React.FC<Props> = ({navigation}) => {
   });
 
   const signIn = async () => {
+
     if (value.email === '' || value.password === '') {
       setValue({...value, error: 'Please fill all the fields.'});
       return;
@@ -46,11 +48,38 @@ const SignIn: React.FC<Props> = ({navigation}) => {
       setValue({...value, error: error.message});
       return;
     }
+
   };
 
   const signUp = () => {
     navigation.navigate('SignUp');
   };
+React.useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: "799001895781-d5j13sakr32ihoatonnn8mvq1janugso.apps.googleusercontent.com",
+      offlineAccess: true
+    });
+  }, [])
+  const GoogleSignUp = async () => {
+      try {
+        await GoogleSignin.hasPlayServices();
+        await GoogleSignin.signIn().then(result => { console.log(result) });
+        navigation.navigate('SignIn');
+      } catch (error) {
+        if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+          // user cancelled the login flow
+          alert('User cancelled the login flow !');
+        } else if (error.code === statusCodes.IN_PROGRESS) {
+          alert('Signin in progress');
+          // operation (f.e. sign in) is in progress already
+        } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+          alert('Google play services not available or outdated !');
+          // play services not available or outdated
+        } else {
+          console.log(error)
+        }
+      }
+    };
 
   return (
     <SafeAreaView>
@@ -150,7 +179,14 @@ const SignIn: React.FC<Props> = ({navigation}) => {
               justifyContent: 'center',
             }}>
             <TouchableOpacity
-              style={styleSheet.iconsTouchableOp}>
+              style={{
+                padding: Spacing*2,
+                backgroundColor: Colors.gray,
+                borderRadius: Spacing/2,
+                marginHorizontal: Spacing,
+       }}
+               onPress={GoogleSignUp}
+              >
               {/* <Ionicons
                 name="logo-google"
                 color={Colors.text}
@@ -158,7 +194,12 @@ const SignIn: React.FC<Props> = ({navigation}) => {
               /> */}
             </TouchableOpacity>
             <TouchableOpacity
-              style={styleSheet.iconsTouchableOp}>
+              style={{
+                padding: Spacing,
+                backgroundColor: Colors.gray,
+                borderRadius: Spacing / 2,
+                marginHorizontal: Spacing,
+              }}>
               {/* <Ionicons
                 name="logo-apple"
                 color={Colors.text}
@@ -166,7 +207,12 @@ const SignIn: React.FC<Props> = ({navigation}) => {
               /> */}
             </TouchableOpacity>
             <TouchableOpacity
-              style={styleSheet.iconsTouchableOp}>
+              style={{
+                padding: Spacing,
+                backgroundColor: Colors.gray,
+                borderRadius: Spacing / 2,
+                marginHorizontal: Spacing,
+              }}>
               {/* <Ionicons
                 name="logo-facebook"
                 color={Colors.text}
