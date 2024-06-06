@@ -36,23 +36,12 @@ type ValueProps = {
     value: number; // Assuming 'value' is a number
 };
 
-const Value = ({ name, value }) => (
-    <View style={styleSheet.valueContainer}>
-        <Text style={styleSheet.valueName}>{name}:</Text>
-        <Text style={styleSheet.valueValue}>{value.toFixed(2)}</Text>
-    </View>
-);
 
 const Home: React.FC<Props> = ({ navigation }) => {
     const logOut = async () => {
         await auth().signOut();
     };
 
-    return (
-        <ScrollView>
-            <View style={styleSheet.container}>
-                <View>
-                    <Text>Logged In</Text>
 const [accelerometerData, setAccelerometerData] = useState({ x: 0, y: 0, z: 0 });
   const [subscription, setSubscription] =useState<Subscription | null>(null);
 
@@ -250,12 +239,26 @@ const [longitude, setLongitude] = useState(0);
 
 
 
+
   return (
     <ScrollView>
       <View style={styleSheet.container}>
         <View>
           <Text>Logged In</Text>
         </View>
+         <TouchableOpacity
+                            style={styleSheet.startstopbtn}
+                            onPress={startSensors}
+                        >
+                            <Text style={styleSheet.btnText}>Start</Text>
+                        </TouchableOpacity>
+          <TouchableOpacity
+                             style={styleSheet.startstopbtn}
+                             onPress={stopSensors}
+                         >
+                             <Text style={styleSheet.btnText}>Stop</Text>
+                         </TouchableOpacity>
+
             <View style={styleSheet.accelerometerContainer}>
                       <Text>Accelerometer data:</Text>
                       <Value name="Ax" value={ax} />
@@ -273,11 +276,7 @@ const [longitude, setLongitude] = useState(0);
                   <Value name="Gz" value={gz} />
 
                 </View>
-                <TouchableOpacity
-                    onPress={() => navigation.navigate('SensorMap')}
-                    style={styleSheet.btnTouchableOp}>
-                    <Text style={styleSheet.btnText}>View Maps</Text>
-                </TouchableOpacity>
+
                 <View style={styleSheet.accelerometerContainer}>
                                   <Text>magnetometer data:</Text>
                                   <Value name="Mx" value={mx} />
@@ -303,19 +302,9 @@ const [longitude, setLongitude] = useState(0);
                     <Text style={styleSheet.btnText}>Sensor Data</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={styleSheet.btnTouchableOp}
-                    onPress={startSensors}
-                >
-                    <Text style={styleSheet.btnText}>Start</Text>
-                </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={styleSheet.btnTouchableOp}
-                    onPress={stopSensors}
-                >
-                    <Text style={styleSheet.btnText}>Stop</Text>
-                </TouchableOpacity>
+
+
 
                 <TouchableOpacity onPress={logOut} style={styleSheet.btnTouchableOp}>
                     <Text style={styleSheet.btnText}>Logout</Text>
@@ -376,6 +365,24 @@ const styleSheet = StyleSheet.create({
         fontSize: FontSize.medium,
         color: Colors.text,
     },
+    startstopbtn :{
+                         margin: Spacing,
+                         padding: Spacing,
+                         backgroundColor: Colors.primary,
+                         borderRadius: Spacing,
+
+                         shadowColor: Colors.primary,
+                         shadowOffset: {
+                             width: 0,
+                             height: Spacing/2,
+                         },
+
+                         shadowOpacity: 0.3,
+                         justifyContent: 'space-between',
+                         shadowRadius: Spacing,
+                         flex: 1,
+                         alignItems: 'row',
+                     },
 });
 
 export default Home;

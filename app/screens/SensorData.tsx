@@ -3,7 +3,7 @@ import Spacing from '../constants/Spacing';
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import FontSize from '../constants/FontSize';
 import { RouteProp } from "@react-navigation/native";
-
+import {accelerometerData} from '../Home'
 type RootStackParamList = {
   SensorData: { accelerometerData: { x: number, y: number, z: number } };
 };
@@ -15,7 +15,8 @@ type Props = {
 };
 
 const SensorData: React.FC<Props> = ({ route }) => {
-  const { accelerometerData } = route.params;
+  const  accelerometerData  = route.params;
+
   const { x: ax, y: ay, z: az } = accelerometerData;
 
     return (
