@@ -1,50 +1,82 @@
 /* eslint-disable react-native/no-inline-styles */
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import React from 'react';
-import Spacing from '../constants/Spacing';
-import FontSize from '../constants/FontSize';
-import Colors from '../constants/Colors';
-import auth from '@react-native-firebase/auth';
+import { 
+    SafeAreaView, 
+    StyleSheet, 
+    Text, 
+    TextInput, 
+    TouchableOpacity, 
+    View, 
+} from 'react-native'; 
+import React from 'react'; 
+import Spacing from '../constants/Spacing'; 
+import FontSize from '../constants/FontSize'; 
+import Colors from '../constants/Colors'; 
+import auth from '@react-native-firebase/auth'; 
+import {NativeStackNavigationProp} from '@react-navigation/native-stack'; 
+import {RootStackParamList} from '../types'; 
+import { Image } from 'react-native';
 
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {RootStackParamList} from '../types';
-
-type SingInScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  'SignIn'
->;
-
-type Props = {
-  navigation: SingInScreenNavigationProp;
+type SingInScreenNavigationProp = NativeStackNavigationProp< 
+RootStackParamList, 
+'SignIn' >; 
+type Props = { navigation: SingInScreenNavigationProp; };
+type userInfo = { 
+    email : string; 
+    password: string; 
+    error: string | null;
 };
 
 const SignUp: React.FC<Props> = ({navigation}) => {
-  const [value, setValue] = React.useState({
-    email: '',
-    password: '',
-    error: '',
-  });
+    const [value, setValue] = React.useState<userInfo>({
+        email: '',
+        password: '',
+        error: '',
+    });
 
-  const signUp = async () => {
-    if (value.email === '' || value.password === '') {
-      setValue({...value, error: 'Please fill all the fields.'});
-      return;
-    }
+    const [ isLoading, setLoading ] = React.useState(false);
 
-    try {
-      await auth().createUserWithEmailAndPassword(value.email, value.password);
-    } catch (error: any) {
-      setValue({...value, error: error.message});
-      return;
-    }
-  };
+    const signUp = async () => {
+        if (value.email === '' || value.password === '') {
+            setValue({...value, error: 'Please fill all the fields.'});
+            return;
+        }
+
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailPattern.test(value.email)) {
+            setValue({...value, error: 'Please enter a valid email address.'});
+            return;
+        }
+
+        try {
+            setLoading(true);
+            await auth().createUserWithEmailAndPassword(
+                value.email.replace(' ',''),
+                value.password
+            );
+            setLoading(false);
+        } catch (error: any) {
+            if(
+                error.code == 'auth/email-already-exists' 
+                || error.code == 'auth/email-already-in-use'
+            ) {
+                setValue({...value, error: 'email already exists'});
+                setLoading(false);
+                return;
+            }else if(error.code === 'auth/weak-password') {
+                setValue({...value, error: 'weak-password'});
+                setLoading(false);
+                return;
+            }
+
+            setValue({
+                ...value,
+                error: 'internal server error or check your internet connection'
+            });
+            console.log(error.code);
+            setLoading(false);
+            return;
+        }
+    };
 
   return (
     <SafeAreaView>
@@ -52,6 +84,7 @@ const SignUp: React.FC<Props> = ({navigation}) => {
         style={{
           padding: Spacing * 2,
         }}>
+
         <View
           style={{
             alignItems: 'center',
@@ -65,6 +98,7 @@ const SignUp: React.FC<Props> = ({navigation}) => {
             Create an account to know your sensor data
           </Text>
         </View>
+
         <View
           style={{
             marginVertical: Spacing * 3,
@@ -96,14 +130,26 @@ const SignUp: React.FC<Props> = ({navigation}) => {
             Forgot your password ?
           </Text>
         </View>
+        
+        {value.error != null && 
+            <View>
+                <Text style={{
+                    fontFamily: 'Poppins-SemiBold',
+                    fontSize: FontSize.small,
+                    color: 'red'
+                }}>
+                    {value.error}
+                </Text>
+            </View>
+        }
 
         <TouchableOpacity
-          onPress={signUp}
-          style={styleSheet.btnTouchableOp}>
-          <Text
-            style={styleSheet.btnText}>
-            Sign Up
-          </Text>
+            onPress={signUp}
+            style={styleSheet.btnTouchableOp}>
+            <Text
+                style={styleSheet.btnText}>
+                {isLoading ? 'Creating account' : 'Sign Up'}
+            </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -145,30 +191,22 @@ const SignUp: React.FC<Props> = ({navigation}) => {
             }}>
             <TouchableOpacity
               style={styleSheet.iconsTouchableOp}>
-              {/* <Ionicons
-                name="logo-google"
-                color={Colors.text}
-                size={Spacing * 2}
-              /> */}
+               <Image source={require('../../assets/facebook.png')}/>
             </TouchableOpacity>
+
             <TouchableOpacity
               style={styleSheet.iconsTouchableOp}>
-              {/* <Ionicons
-                name="logo-apple"
-                color={Colors.text}
-                size={Spacing * 2}
-              /> */}
+               <Image source={require('../../assets/search.png')}/>
             </TouchableOpacity>
+
             <TouchableOpacity
               style={styleSheet.iconsTouchableOp}>
-              {/* <Ionicons
-                name="logo-facebook"
-                color={Colors.text}
-                size={Spacing * 2}
-              /> */}
+               <Image source={require('../../assets/microsoft.png')}/>
             </TouchableOpacity>
-          </View>
+         </View>
+
         </View>
+
       </View>
     </SafeAreaView>
   );

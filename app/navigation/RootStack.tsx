@@ -4,14 +4,14 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 
 
 import SensorMap from '../screens/SensorMap';
-import Test from '../screens/Test';
+// import Test from '../screens/Test';
 import Header from '../components/Header';
 import Colors from '../constants/Colors';
 import Home from '../screens/Home';
 import Settings from '../screens/Settings';
 import Profile from '../screens/Profile';
 import FontSize from '../constants/FontSize';
-
+import SensorData from '../screens/SensorData';
 const Drawer = createDrawerNavigator();
 const Stack = createNativeStackNavigator();
 
@@ -68,6 +68,13 @@ const RootStack = () => {
                     headerShown: false
                 }}
             />
+            <Stack.Screen
+                            name="SensorData"
+                            component={SensorData}
+                            options={{
+                                headerShown: false
+                            }}
+                        />
 
             <Stack.Screen 
                 name="SensorMap"
@@ -76,14 +83,6 @@ const RootStack = () => {
                     headerTitle: () => <Header name="Sensor Map"/>,
                 }}
             />
-
-            <Stack.Screen
-                name="Test"
-                component={Test}
-                options={{
-                    headerTitle: () => <Header name="Test"/>,
-                }}
-            /> 
 
         </Stack.Navigator>
     );
