@@ -3,7 +3,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import auth from '@react-native-firebase/auth';
 import Geolocation from '@react-native-community/geolocation';
-
+import useAccelerometer from './Sensors/useAccelerometer';
+import useGyrometer from './Sensors/useGyrometer';
+import useMagnetometer from './Sensors/useMagnetometer';
 import {
     accelerometer,
     gyroscope,
@@ -42,114 +44,34 @@ const Home: React.FC<Props> = ({ navigation }) => {
         await auth().signOut();
     };
 
-const [accelerometerData, setAccelerometerData] = useState({ x: 0, y: 0, z: 0 });
-  const [subscription, setSubscription] =useState<Subscription | null>(null);
-
-  const startAccelerometer = () => {
-
-    setUpdateIntervalForType(SensorTypes.accelerometer, 400);
-
-   const newSubscription = accelerometer.subscribe(
-        ({ x, y, z }) => {setAccelerometerData({ x, y, z });
-                const pitch = Math.atan2(-x, Math.sqrt(y * y + z * z)) * (180 / Math.PI);
-                      setPitchData(pitch);
-               const roll = Math.atan2(y, x) * (180 / Math.PI);
-                    setRollData(roll);
-                const azimuth=Math.atan2(z, Math.sqrt(x * x + y * y)) * (180 / Math.PI);
-                setAzimuthData(azimuth);
-             },
-       (error) => {
-         console.log('The sensor is not available', error);
-       }
-     );
-
-    setSubscription(newSubscription);
-  ;}
-  useEffect(() => {
-      return () => {
-        if (subscription) {
-          subscription.unsubscribe();
-        }
-      };
-    }, [subscription]);
-
-    const { x:ax, y:ay, z:az } = accelerometerData;
+    const {
+        accelerometerData,
+        accelerometerSamples,
+           startSampling:startAccelerometerSampling,
+           stopSampling:stopAccelerometerSampling
+    } = useAccelerometer();
 
 
-  const stopAccelerometer = () => {
-    if (subscription) {
-      subscription.unsubscribe();
-      setSubscription(null);
-      setAccelerometerData({x:0,y:0,z:0})
-    }
-  };
+    const {
+            gyroscopeData,
+            gyrometerSamples,
+           startSamplingg:startGyroscopeSampling,
+            stopSamplingg:stopGyroscopeSampling
+        } = useGyrometer();
+
+ const {
+            magnetometerData,
+            magnetometerSamples,
+            startSamplingm:startMagnetometerSampling,
+            stopSamplingm:stopMagnetometerSampling
+        } = useMagnetometer();
 
 
-
+        const { x: ax, y: ay, z: az, pitch, roll, azimuth, timestamp } = accelerometerData;
+        const { x: mx, y: my, z: mz }=magnetometerData;
+        const { x: gx, y: gy, z: gz }=gyroscopeData;
 
 //   gyroscope
-
-  const [gyroscopeData, setGyroscopeData] = useState({ x: 0, y: 0, z: 0 });
-  const [gyroscopeSubscription, setGyroscopeSubscription] = useState<Subscription | null>(null);
-const startGyroscope = () => {
-    setUpdateIntervalForType(SensorTypes.gyroscope, 400);
-    const newSubscription = gyroscope.subscribe(
-      ({ x, y, z }) => setGyroscopeData({ x, y, z }),
-      (error) => console.log('The sensor is not available', error)
-    );
-    setGyroscopeSubscription(newSubscription);
-  };
-  const stopGyroscope = () => {
-    if (gyroscopeSubscription) {
-      gyroscopeSubscription.unsubscribe();
-      setGyroscopeSubscription(null);
-      setGyroscopeData({ x: 0, y: 0, z: 0 });
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      if (gyroscopeSubscription) {
-        gyroscopeSubscription.unsubscribe();
-      }
-    };
-  }, [subscription]);
-  const { x:gx, y:gy, z:gz } = gyroscopeData;
-//   rollData
-const [rollData, setRollData] = useState(0);
-// pitchData
-const [pitchData, setPitchData] = useState(0);
-
-// azimuth
-const [azimuthData, setAzimuthData] = useState(0);
-
-// magnetometer
-  const [magnetometerData, setMagnetometerData] = useState({ x: 0, y: 0, z: 0 });
-  const [magnetometerSubscription, setMagnetometerSubscription] = useState<Subscription | null>(null);
-const startMagnetometer = () => {
-    setUpdateIntervalForType(SensorTypes.magnetometer, 400);
-    const newSubscription = magnetometer.subscribe(
-      ({ x, y, z }) => setMagnetometerData({ x, y, z }),
-      (error) => console.log('The magnetometer is not available', error)
-    );
-    setMagnetometerSubscription(newSubscription);
-  };
-  const stopmagnetometer = () => {
-      if (magnetometerSubscription) {
-        magnetometerSubscription.unsubscribe();
-        setMagnetometerSubscription(null);
-        setMagnetometerData({ x: 0, y: 0, z: 0 });
-      }
-    };
-  useEffect(() => {
-    return () => {
-      if (magnetometerSubscription) {
-        magnetometerSubscription.unsubscribe();
-      }
-    };
-  }, [subscription]);
-
-  const { x:mx, y:my, z:mz } = magnetometerData;
 // HACC
  const [accuracy, setAccuracy] = useState<number | string>('Calculating...');
   useEffect(() => {
@@ -182,9 +104,7 @@ const [longitude, setLongitude] = useState(0);
         setLatitude(position.coords.latitude);
         setLongitude(position.coords.longitude);
         setAltitude(position.coords.altitude);
-        console.log('Latitude:', position.coords.latitude);
-        console.log('Longitude:', position.coords.longitude);
-        console.log('Altitude:', position.coords.altitude);
+
       },
       (error) => {
         console.log('Error getting location:', error);
@@ -223,19 +143,19 @@ const [longitude, setLongitude] = useState(0);
     }
   };
 
+const startAll =() => {
+startAccelerometerSampling();
+    startGyroscopeSampling();
+    startMagnetometerSampling();
+}
 
+const stopAll = () =>{
+  stopAccelerometerSampling();
+     stopGyroscopeSampling();
+     stopMagnetometerSampling();
 
+}
 
-  const startSensors = () =>{
-   startAccelerometer();
-   startGyroscope();
-   startMagnetometer();
-  }
-    const stopSensors = () => {
-    stopAccelerometer();
-    stopGyroscope();
-    stopmagnetometer();
-    }
 
 
 
@@ -246,27 +166,28 @@ const [longitude, setLongitude] = useState(0);
         <View>
           <Text>Logged In</Text>
         </View>
-         <TouchableOpacity
-                            style={styleSheet.startstopbtn}
-                            onPress={startSensors}
-                        >
-                            <Text style={styleSheet.btnText}>Start</Text>
-                        </TouchableOpacity>
-          <TouchableOpacity
-                             style={styleSheet.startstopbtn}
-                             onPress={stopSensors}
-                         >
-                             <Text style={styleSheet.btnText}>Stop</Text>
-                         </TouchableOpacity>
+
+                <TouchableOpacity
+                              style={styleSheet.startstopbtn}
+                              onPress={startAll}
+                          >
+                              <Text style={styleSheet.btnText}>Start Sampling</Text>
+                          </TouchableOpacity>
+               <TouchableOpacity
+                    style={styleSheet.startstopbtn}
+                    onPress={stopAll}
+                >
+                    <Text style={styleSheet.btnText}>Stop Sampling</Text>
+                </TouchableOpacity>
 
             <View style={styleSheet.accelerometerContainer}>
                       <Text>Accelerometer data:</Text>
                       <Value name="Ax" value={ax} />
                       <Value name="Ay" value={ay} />
                       <Value name="Az" value={az} />
-                      <Value name="pitch" value={pitchData} />
-                      <Value name="Roll" value={rollData} />
-                      <Value name="Azimuth" value={azimuthData} />
+                      <Value name="pitch" value={pitch} />
+                      <Value name="Roll" value={roll} />
+                      <Value name="Azimuth" value={azimuth} />
 
                     </View>
         <View style={styleSheet.accelerometerContainer}>

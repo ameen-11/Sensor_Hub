@@ -4,8 +4,13 @@ import { View, Text, ScrollView, StyleSheet } from "react-native";
 import FontSize from '../constants/FontSize';
 import { RouteProp } from "@react-navigation/native";
 import {accelerometerData} from '../Home'
+import {gyroscopeData} from '../Home'
+import {magnetometerData} from '../Home'
 type RootStackParamList = {
-  SensorData: { accelerometerData: { x: number, y: number, z: number } };
+  SensorData: { accelerometerData: { x: number, y: number, z: number },
+  gyroscopeData: { x: number, y: number, z: number },
+  magnetometerData: { x: number, y: number, z: number }
+   };
 };
 
 type SensorDataScreenRouteProp = RouteProp<RootStackParamList, 'SensorData'>;
@@ -16,8 +21,12 @@ type Props = {
 
 const SensorData: React.FC<Props> = ({ route }) => {
   const  accelerometerData  = route.params;
+  const  gyroscopeData  = route.params;
+  const  magnetometerData  = route.params;
 
   const { x: ax, y: ay, z: az } = accelerometerData;
+  const { x: gx, y: gy, z: gz } = gyroscopeData;
+  const { x: mx, y: my, z: mz } = magnetometerData;
 
     return (
         <ScrollView>
