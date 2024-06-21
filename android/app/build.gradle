@@ -1,7 +1,7 @@
-apply plugin: "com.google.gms.google-services"
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+apply plugin: "com.google.gms.google-services"
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -92,7 +92,7 @@ android
 //            keyAlias 'androiddebugkey'
 //            keyPassword 'android'
 
-            storeFile file("/Users/chamanchangappaha/Desktop/Sensor_Hub/android/app/my_release_key.keystore")
+            storeFile file("./my_release_key.keystore")
             storePassword 'chaman@123'
             keyAlias MYAPP_UPLOAD_KEY_ALIAS
             keyPassword MYAPP_UPLOAD_KEY_PASSWORD
@@ -100,7 +100,7 @@ android
             }
         release{
             if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
-                storeFile file("/Users/chamanchangappaha/Desktop/Sensor_Hub/android/app/my_release_key.keystore")
+                storeFile file("./my_release_key.keystore")
                 storePassword 'chaman@123'
                 keyAlias MYAPP_UPLOAD_KEY_ALIAS
                 keyPassword MYAPP_UPLOAD_KEY_PASSWORD
