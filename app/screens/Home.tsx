@@ -10,301 +10,351 @@ import {
     setUpdateIntervalForType,
     SensorTypes,
     magnetometer,
-} from "react-native-sensors";
-import { startSensors, stopSensors } from '../hooks/sensor';
+} from 'react-native-sensors';
 
 import {
-  Text,
-  View,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  PermissionsAndroid,
+    Text,
+    View,
+    ScrollView,
+    TouchableOpacity,
+    StyleSheet,
+    PermissionsAndroid,
+    Platform,
 } from 'react-native';
 import Spacing from '../constants/Spacing';
 import FontSize from '../constants/FontSize';
 import Colors from '../constants/Colors';
 import { Subscription } from 'rxjs';
+import { getDBConnection, insertData, getData, createTable } from '../db-service';
+import { SQLiteDatabase } from 'react-native-sqlite-storage';
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 type Props = {
     navigation: HomeScreenNavigationProp;
 };
 
-type ValueProps = {
-    name: string; // Explicitly define the type for 'name' as string
-    value: number; // Assuming 'value' is a number
-};
-
-
 const Home: React.FC<Props> = ({ navigation }) => {
     const logOut = async () => {
         await auth().signOut();
     };
+// =============  sensors ===========
+    const [accelerometerData, setAccelerometerData] = useState({
+        x: 0,
+        y: 0,
+        z: 0,
+    });
+    const [accelSubscription, setSubscription] = useState<Subscription | null>(
+        null,
+    );
 
-const [accelerometerData, setAccelerometerData] = useState({ x: 0, y: 0, z: 0 });
-  const [subscription, setSubscription] =useState<Subscription | null>(null);
+    const startAccelerometer = () => {
+        setUpdateIntervalForType(SensorTypes.accelerometer, 1000);
 
-  const startAccelerometer = () => {
-
-    setUpdateIntervalForType(SensorTypes.accelerometer, 400);
-
-   const newSubscription = accelerometer.subscribe(
-        ({ x, y, z }) => {setAccelerometerData({ x, y, z });
-                const pitch = Math.atan2(-x, Math.sqrt(y * y + z * z)) * (180 / Math.PI);
-                      setPitchData(pitch);
-               const roll = Math.atan2(y, x) * (180 / Math.PI);
-                    setRollData(roll);
-                const azimuth=Math.atan2(z, Math.sqrt(x * x + y * y)) * (180 / Math.PI);
+        const newSubscription = accelerometer.subscribe(
+            ({ x, y, z }) => {
+                setAccelerometerData({ x, y, z });
+                const pitch =
+                    Math.atan2(-x, Math.sqrt(y * y + z * z)) * (180 / Math.PI);
+                setPitchData(pitch);
+                const roll = Math.atan2(y, x) * (180 / Math.PI);
+                setRollData(roll);
+                const azimuth =
+                    Math.atan2(z, Math.sqrt(x * x + y * y)) * (180 / Math.PI);
                 setAzimuthData(azimuth);
-             },
-       (error) => {
-         console.log('The sensor is not available', error);
-       }
-     );
-
-    setSubscription(newSubscription);
-  ;}
-  useEffect(() => {
-      return () => {
-        if (subscription) {
-          subscription.unsubscribe();
-        }
-      };
-    }, [subscription]);
-
-    const { x:ax, y:ay, z:az } = accelerometerData;
-
-
-  const stopAccelerometer = () => {
-    if (subscription) {
-      subscription.unsubscribe();
-      setSubscription(null);
-      setAccelerometerData({x:0,y:0,z:0})
-    }
-  };
-
-
-
-
-//   gyroscope
-
-  const [gyroscopeData, setGyroscopeData] = useState({ x: 0, y: 0, z: 0 });
-  const [gyroscopeSubscription, setGyroscopeSubscription] = useState<Subscription | null>(null);
-const startGyroscope = () => {
-    setUpdateIntervalForType(SensorTypes.gyroscope, 400);
-    const newSubscription = gyroscope.subscribe(
-      ({ x, y, z }) => setGyroscopeData({ x, y, z }),
-      (error) => console.log('The sensor is not available', error)
-    );
-    setGyroscopeSubscription(newSubscription);
-  };
-  const stopGyroscope = () => {
-    if (gyroscopeSubscription) {
-      gyroscopeSubscription.unsubscribe();
-      setGyroscopeSubscription(null);
-      setGyroscopeData({ x: 0, y: 0, z: 0 });
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      if (gyroscopeSubscription) {
-        gyroscopeSubscription.unsubscribe();
-      }
-    };
-  }, [subscription]);
-  const { x:gx, y:gy, z:gz } = gyroscopeData;
-//   rollData
-const [rollData, setRollData] = useState(0);
-// pitchData
-const [pitchData, setPitchData] = useState(0);
-
-// azimuth
-const [azimuthData, setAzimuthData] = useState(0);
-
-// magnetometer
-  const [magnetometerData, setMagnetometerData] = useState({ x: 0, y: 0, z: 0 });
-  const [magnetometerSubscription, setMagnetometerSubscription] = useState<Subscription | null>(null);
-const startMagnetometer = () => {
-    setUpdateIntervalForType(SensorTypes.magnetometer, 400);
-    const newSubscription = magnetometer.subscribe(
-      ({ x, y, z }) => setMagnetometerData({ x, y, z }),
-      (error) => console.log('The magnetometer is not available', error)
-    );
-    setMagnetometerSubscription(newSubscription);
-  };
-  const stopmagnetometer = () => {
-      if (magnetometerSubscription) {
-        magnetometerSubscription.unsubscribe();
-        setMagnetometerSubscription(null);
-        setMagnetometerData({ x: 0, y: 0, z: 0 });
-      }
-    };
-  useEffect(() => {
-    return () => {
-      if (magnetometerSubscription) {
-        magnetometerSubscription.unsubscribe();
-      }
-    };
-  }, [subscription]);
-
-  const { x:mx, y:my, z:mz } = magnetometerData;
-// HACC
- const [accuracy, setAccuracy] = useState<number | string>('Calculating...');
-  useEffect(() => {
-    const watchId = Geolocation.watchPosition(
-      position => {
-        const { accuracy } = position.coords;
-        setAccuracy(accuracy.toFixed(2)); // Set accuracy (HACC) from GPS data
-      },
-      error => {
-        console.error('Error fetching location:', error);
-        setAccuracy('Error'); // Set accuracy to 'Error' if fetching fails
-      },
-      { enableHighAccuracy: true, distanceFilter: 10 } // Options for GPS accuracy and distance filter
-    );
-
-    return () => Geolocation.clearWatch(watchId); // Cleanup function to clear GPS watch
-  }, []);
-
-
-// lattitude and longitude
-const [latitude, setLatitude] = useState(0);
-const [longitude, setLongitude] = useState(0);
-  const [altitude, setAltitude] = useState<number | null>(null);
-
-
-
-  const getLocation = () => {
-    Geolocation.getCurrentPosition(
-      (position) => {
-        setLatitude(position.coords.latitude);
-        setLongitude(position.coords.longitude);
-        setAltitude(position.coords.altitude);
-        console.log('Latitude:', position.coords.latitude);
-        console.log('Longitude:', position.coords.longitude);
-        console.log('Altitude:', position.coords.altitude);
-      },
-      (error) => {
-        console.log('Error getting location:', error);
-      },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-    );
-  };
-
-  useEffect(() => {
-    requestLocationPermission();
-  }, []);
-
-  const requestLocationPermission = async () => {
-    if (Platform.OS === 'android') {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          {
-            title: 'Location Permission',
-            message: 'This app needs access to your location',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          }
+            },
+            error => {
+                console.log('The sensor is not available', error);
+            },
         );
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          console.log('Location permission denied');
-        } else {
-          getLocation();
+
+        setSubscription(newSubscription);
+    };
+
+    const { x: ax, y: ay, z: az } = accelerometerData;
+
+    const stopAccelerometer = () => {
+        if (accelSubscription) {
+            accelSubscription.unsubscribe();
+            setSubscription(null);
+            setAccelerometerData({ x: 0, y: 0, z: 0 });
         }
-      } catch (err) {
-        console.log(err);
-      }
-    } else {
-      getLocation();
-    }
-  };
+    };
 
+    //   gyroscope
 
+    const [gyroscopeData, setGyroscopeData] = useState({ x: 0, y: 0, z: 0 });
+    const [gyroscopeSubscription, setGyroscopeSubscription] =
+        useState<Subscription | null>(null);
+    const startGyroscope = () => {
+        setUpdateIntervalForType(SensorTypes.gyroscope, 1000);
+        const newSubscription = gyroscope.subscribe(
+            ({ x, y, z }) => setGyroscopeData({ x, y, z }),
+            error => console.log('The sensor is not available', error),
+        );
+        setGyroscopeSubscription(newSubscription);
+    };
+    const stopGyroscope = () => {
+        if (gyroscopeSubscription) {
+            gyroscopeSubscription.unsubscribe();
+            setGyroscopeSubscription(null);
+            setGyroscopeData({ x: 0, y: 0, z: 0 });
+        }
+    };
 
+    const { x: gx, y: gy, z: gz } = gyroscopeData;
+    //   rollData
+    const [rollData, setRollData] = useState(0);
+    // pitchData
+    const [pitchData, setPitchData] = useState(0);
 
-  const startSensors = () =>{
-   startAccelerometer();
-   startGyroscope();
-   startMagnetometer();
-  }
+    // azimuth
+    const [azimuthData, setAzimuthData] = useState(0);
+
+    // magnetometer
+    const [magnetometerData, setMagnetometerData] = useState({ x: 0, y: 0, z: 0 });
+    const [magnetometerSubscription, setMagnetometerSubscription] =
+        useState<Subscription | null>(null);
+    const startMagnetometer = () => {
+        setUpdateIntervalForType(SensorTypes.magnetometer, 1000);
+        const newSubscription = magnetometer.subscribe(
+            ({ x, y, z }) => setMagnetometerData({ x, y, z }),
+            error => console.log('The magnetometer is not available', error),
+        );
+        setMagnetometerSubscription(newSubscription);
+    };
+    const stopmagnetometer = () => {
+        if (magnetometerSubscription) {
+            magnetometerSubscription.unsubscribe();
+            setMagnetometerSubscription(null);
+            setMagnetometerData({ x: 0, y: 0, z: 0 });
+        }
+    };
+
+    //testing
+    useEffect(() => {
+        return () => {
+            if (magnetometerSubscription) {
+                magnetometerSubscription.unsubscribe();
+            }
+        };
+    }, [magnetometerSubscription]);
+
+    const { x: mx, y: my, z: mz } = magnetometerData;
+    // HACC
+    const [accuracy, setAccuracy] = useState<number>(0);
+    useEffect(() => {
+        const watchId = Geolocation.watchPosition(
+            position => {
+                const  accuracy  = position.coords.accuracy;
+                setAccuracy(accuracy); // Set accuracy (HACC) from GPS data
+            },
+            error => {
+                console.error('Error fetching location:', error);
+                setAccuracy(0); // Set accuracy to 'Error' if fetching fails
+            },
+            { enableHighAccuracy: true, distanceFilter: 10 }, // Options for GPS accuracy and distance filter
+        );
+
+        return () => Geolocation.clearWatch(watchId); // Cleanup function to clear GPS watch
+    }, []);
+
+    // lattitude and longitude
+    const [latitude, setLatitude] = useState(0);
+    const [longitude, setLongitude] = useState(0);
+    const [altitude, setAltitude] = useState<number | null>(null);
+
+    const getLocation = () => {
+        Geolocation.getCurrentPosition(
+            position => {
+                setLatitude(position.coords.latitude);
+                setLongitude(position.coords.longitude);
+                setAltitude(position.coords.altitude);
+                console.log('Latitude:', position.coords.latitude);
+                console.log('Longitude:', position.coords.longitude);
+                console.log('Altitude:', position.coords.altitude);
+            },
+            error => {
+                console.log('Error getting location:', error);
+            },
+            { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
+        );
+    };
+
+    useEffect(() => {
+        requestLocationPermission();
+    }, []);
+
+    const requestLocationPermission = async () => {
+        if (Platform.OS === 'android') {
+            try {
+                const granted = await PermissionsAndroid.request(
+                    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                    {
+                        title: 'Location Permission',
+                        message: 'This app needs access to your location',
+                        buttonNeutral: 'Ask Me Later',
+                        buttonNegative: 'Cancel',
+                        buttonPositive: 'OK',
+                    },
+                );
+                if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+                    console.log('Location permission denied');
+                } else {
+                    getLocation();
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        } else {
+            getLocation();
+        }
+    };
+// =============== done sensors =======
+
+// database 
+    const createDB = async () => {
+        const db : SQLiteDatabase | undefined = await getDBConnection();
+        if( db !== undefined ){
+        await createTable(db);
+        const data: sensorDataType = {
+            timestamp: new Date().toISOString(),
+            ax: accelerometerData.x,
+            ay: accelerometerData.y,
+            az: accelerometerData.z,
+            pitch: pitchData,
+            roll: rollData,
+            azimuth: azimuthData,
+            avx: gyroscopeData.x,
+            avy: gyroscopeData.y,
+            avz: gyroscopeData.z,
+            mfx: magnetometerData.x,
+            mfy: magnetometerData.y,
+            mfz: magnetometerData.z,
+            latitude: latitude,
+            longitude: longitude,
+            altitude: altitude,
+            hacc: accuracy,
+        };
+        await insertData(db, data);
+        await db.close();
+        }
+    };
+
+    let timeoutid: ReturnType<typeof setTimeout>;
+    let intervalId: ReturnType<typeof setInterval>;
+
+    const startSensors = () => {
+        startAccelerometer();
+        startGyroscope();
+        startMagnetometer();
+        console.log('started collecting data');
+        intervalId = setInterval(async () => {
+            console.log('database call');
+            createDB();
+        }, 1000);
+
+        timeoutid = setTimeout(() => {
+            magnetometerSubscription?.unsubscribe();
+            accelSubscription?.unsubscribe();
+            gyroscopeSubscription?.unsubscribe();
+            setGyroscopeSubscription(null);
+            setSubscription(null);
+            setMagnetometerSubscription(null);
+            clearInterval(intervalId);
+            console.log('fired the timeout');
+        }, 5 * 1000);
+    };
     const stopSensors = () => {
-    stopAccelerometer();
-    stopGyroscope();
-    stopmagnetometer();
-    }
+        stopAccelerometer();
+        stopGyroscope();
+        stopmagnetometer();
+        clearTimeout(timeoutid);
+        clearInterval(intervalId);
+    };
 
+    //set interval of 1 minutes after the sensors are started and updated the database
+    // after the sensors are stopped or the timeinterval is cleared the updation
+    // of database should be stopeed
 
+    useEffect(() => {
+        console.log('still sensors collection running');
+        console.log(magnetometerData);
+    }, [magnetometerData]);
 
+    const readData = async () => {
+        let db: SQLiteDatabase | undefined = await getDBConnection();
+        if(db != undefined) {
+            const sensordat: sensorDataType[] | null = await getData(db);
+            if (sensordat != null) {
+                sensordat.forEach((data)=> {
+                    console.log(data);
+                });
+            }
+        }else {
+            console.log("db connection failed");
+        }             
+    };
+    
 
-  return (
-    <ScrollView>
-      <View style={styleSheet.container}>
-        <View>
-          <Text>Logged In</Text>
-        </View>
-         <TouchableOpacity
-                            style={styleSheet.startstopbtn}
-                            onPress={startSensors}
-                        >
-                            <Text style={styleSheet.btnText}>Start</Text>
-                        </TouchableOpacity>
-          <TouchableOpacity
-                             style={styleSheet.startstopbtn}
-                             onPress={stopSensors}
-                         >
-                             <Text style={styleSheet.btnText}>Stop</Text>
-                         </TouchableOpacity>
+    useEffect(() => {
+        readData();
+    }, [magnetometerSubscription]);
+//=============
+    return (
+        <ScrollView>
+            <View style={styleSheet.container}>
+                <View>
+                    <Text>Logged In</Text>
+                </View>
+                <TouchableOpacity
+                    style={styleSheet.startstopbtn}
+                    onPress={startSensors}>
+                    <Text style={styleSheet.btnText}>Start</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styleSheet.startstopbtn} onPress={stopSensors}>
+                    <Text style={styleSheet.btnText}>Stop</Text>
+                </TouchableOpacity>
 
-            <View style={styleSheet.accelerometerContainer}>
-                      <Text>Accelerometer data:</Text>
-                      <Value name="Ax" value={ax} />
-                      <Value name="Ay" value={ay} />
-                      <Value name="Az" value={az} />
-                      <Value name="pitch" value={pitchData} />
-                      <Value name="Roll" value={rollData} />
-                      <Value name="Azimuth" value={azimuthData} />
-
-                    </View>
-        <View style={styleSheet.accelerometerContainer}>
-                  <Text>gyroscope data:</Text>
-                  <Value name="Gx" value={gx} />
-                  <Value name="Gy" value={gy} />
-                  <Value name="Gz" value={gz} />
-
+                <View style={styleSheet.accelerometerContainer}>
+                    <Text>Accelerometer data:</Text>
+                    <Value name="Ax" value={ax} />
+                    <Value name="Ay" value={ay} />
+                    <Value name="Az" value={az} />
+                    <Value name="pitch" value={pitchData} />
+                    <Value name="Roll" value={rollData} />
+                    <Value name="Azimuth" value={azimuthData} />
+                </View>
+                <View style={styleSheet.accelerometerContainer}>
+                    <Text>gyroscope data:</Text>
+                    <Value name="Gx" value={gx} />
+                    <Value name="Gy" value={gy} />
+                    <Value name="Gz" value={gz} />
                 </View>
 
                 <View style={styleSheet.accelerometerContainer}>
-                                  <Text>magnetometer data:</Text>
-                                  <Value name="Mx" value={mx} />
-                                  <Value name="My" value={my} />
-                                  <Value name="Mz" value={mz} />
-                                </View>
-            <View style={styleSheet.accelerometerContainer}>
-            <Text> hacc: </Text>
-            <Value name="hacc" value={accuracy}/>
-            <Value name="latitude" value={latitude}/>
-            <Value name="longitude" value={longitude}/>
-             <Value name="Altitude" value={altitude}/>
-            </View>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('SensorMap')}
-          style={styleSheet.btnTouchableOp}>
-          <Text style={styleSheet.btnText}>View Maps</Text>
-        </TouchableOpacity>
+                    <Text>magnetometer data:</Text>
+                    <Value name="Mx" value={mx} />
+                    <Value name="My" value={my} />
+                    <Value name="Mz" value={mz} />
+                </View>
+                <View style={styleSheet.accelerometerContainer}>
+                    <Text> hacc: </Text>
+                    <Value name="hacc" value={accuracy} />
+                    <Value name="latitude" value={latitude} />
+                    <Value name="longitude" value={longitude} />
+                    <Value name="Altitude" value={altitude} />
+                </View>
+                <TouchableOpacity
+                    onPress={() => navigation.navigate('SensorMap')}
+                    style={styleSheet.btnTouchableOp}>
+                    <Text style={styleSheet.btnText}>View Maps</Text>
+                </TouchableOpacity>
 
                 <TouchableOpacity
                     style={styleSheet.btnTouchableOp}
                     onPress={() => navigation.navigate('SensorData')}>
                     <Text style={styleSheet.btnText}>Sensor Data</Text>
                 </TouchableOpacity>
-
-
-
-
 
                 <TouchableOpacity onPress={logOut} style={styleSheet.btnTouchableOp}>
                     <Text style={styleSheet.btnText}>Logout</Text>
@@ -313,12 +363,16 @@ const [longitude, setLongitude] = useState(0);
         </ScrollView>
     );
 };
+type value = {
+    name: string;
+    value: number | string | null;
+};
 
-const Value = ({ name, value }) => (
-  <View style={styleSheet.valueContainer}>
-    <Text style={styleSheet.valueName}>{name}:</Text>
-    <Text style={styleSheet.valueValue}>{value}</Text>
-  </View>
+const Value = ({ name, value }: value) => (
+    <View style={styleSheet.valueContainer}>
+        <Text style={styleSheet.valueName}>{name}:</Text>
+        <Text style={styleSheet.valueValue}>{value}</Text>
+    </View>
 );
 
 const styleSheet = StyleSheet.create({
@@ -365,24 +419,23 @@ const styleSheet = StyleSheet.create({
         fontSize: FontSize.medium,
         color: Colors.text,
     },
-    startstopbtn :{
-                         margin: Spacing,
-                         padding: Spacing,
-                         backgroundColor: Colors.primary,
-                         borderRadius: Spacing,
+    startstopbtn: {
+        margin: Spacing,
+        padding: Spacing,
+        backgroundColor: Colors.primary,
+        borderRadius: Spacing,
 
-                         shadowColor: Colors.primary,
-                         shadowOffset: {
-                             width: 0,
-                             height: Spacing/2,
-                         },
+        shadowColor: Colors.primary,
+        shadowOffset: {
+            width: 0,
+            height: Spacing / 2,
+        },
 
-                         shadowOpacity: 0.3,
-                         justifyContent: 'space-between',
-                         shadowRadius: Spacing,
-                         flex: 1,
-                         alignItems: 'row',
-                     },
+        shadowOpacity: 0.3,
+        justifyContent: 'space-between',
+        shadowRadius: Spacing,
+        flex: 1,
+    },
 });
 
 export default Home;
