@@ -27,6 +27,7 @@
     "react-native-screens": "^3.31.1",
     "react-native-sensors": "^7.3.6",
     "react-native-sqlite-storage": "^6.0.1",
+    "react-native-uuid": "^2.0.2",
     "react-native-vector-icons": "^10.1.0",
     "rxjs": "^7.8.1"
   },

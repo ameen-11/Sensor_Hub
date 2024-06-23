@@ -2,7 +2,6 @@
 import {useState, useEffect} from 'react';
 import React from 'react';
 //read data from the database using readData function from db.ts
-import {readData} from '../db';
 import {
   Text,
   View,
@@ -14,7 +13,6 @@ import Spacing from '../constants/Spacing';
 
 const SensorData = ({navigation}) => {
   useEffect(() => {
-    readData();
   }, []);
 
   const p = [1];
