@@ -100,6 +100,7 @@ export const getData = async (db: SQLiteDatabase) => {
     try {
         let sensorData:sensorDataType[] = [];
         const data = await db.executeSql(`SELECT * FROM ${tableName}`);
+        console.log(data);
         data.forEach(result => {
             for (let i = 0; i < result.rows.length; i++) {
                 const row = result.rows.item(i);

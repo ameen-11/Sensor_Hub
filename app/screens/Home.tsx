@@ -37,7 +37,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
     const logOut = async () => {
         await auth().signOut();
     };
-// =============  sensors ===========
+    // =============  sensors ===========
     const [accelerometerData, setAccelerometerData] = useState({
         x: 0,
         y: 0,
@@ -145,7 +145,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
     useEffect(() => {
         const watchId = Geolocation.watchPosition(
             position => {
-                const  accuracy  = position.coords.accuracy;
+                const accuracy = position.coords.accuracy;
                 setAccuracy(accuracy); // Set accuracy (HACC) from GPS data
             },
             error => {
@@ -209,67 +209,81 @@ const Home: React.FC<Props> = ({ navigation }) => {
             getLocation();
         }
     };
-// =============== done sensors =======
+    // =============== done sensors =======
 
-// database 
+    // database 
     const createDB = async () => {
-        const db : SQLiteDatabase | undefined = await getDBConnection();
-        if( db !== undefined ){
-        await createTable(db);
-        const data: sensorDataType = {
-            timestamp: new Date().toISOString(),
-            ax: accelerometerData.x,
-            ay: accelerometerData.y,
-            az: accelerometerData.z,
-            pitch: pitchData,
-            roll: rollData,
-            azimuth: azimuthData,
-            avx: gyroscopeData.x,
-            avy: gyroscopeData.y,
-            avz: gyroscopeData.z,
-            mfx: magnetometerData.x,
-            mfy: magnetometerData.y,
-            mfz: magnetometerData.z,
-            latitude: latitude,
-            longitude: longitude,
-            altitude: altitude,
-            hacc: accuracy,
-        };
-        await insertData(db, data);
-        await db.close();
+        const db: SQLiteDatabase | undefined = await getDBConnection();
+        if (db !== undefined) {
+            await createTable(db);
+            const data: sensorDataType = {
+                timestamp: new Date().toISOString(),
+                ax: accelerometerData.x,
+                ay: accelerometerData.y,
+                az: accelerometerData.z,
+                pitch: pitchData,
+                roll: rollData,
+                azimuth: azimuthData,
+                avx: gyroscopeData.x,
+                avy: gyroscopeData.y,
+                avz: gyroscopeData.z,
+                mfx: magnetometerData.x,
+                mfy: magnetometerData.y,
+                mfz: magnetometerData.z,
+                latitude: latitude,
+                longitude: longitude,
+                altitude: altitude,
+                hacc: accuracy,
+            };
+            await insertData(db, data);
+            await db.close();
         }
     };
 
-    let timeoutid: ReturnType<typeof setTimeout>;
-    let intervalId: ReturnType<typeof setInterval>;
+//    let timeoutid: ReturnType<typeof setTimeout>;
+//    let intervalId: ReturnType<typeof setInterval>;
+      const [timeoutId , setTimeoutID] = useState<ReturnType<typeof setTimeout> | undefined>(); 
+      const [intervalOutId , setIntervalOutID] = useState<ReturnType<typeof setInterval> | undefined>(); 
 
     const startSensors = () => {
         startAccelerometer();
         startGyroscope();
         startMagnetometer();
         console.log('started collecting data');
-        intervalId = setInterval(async () => {
+        let intervalId = setInterval(async () => {
             console.log('database call');
             createDB();
         }, 1000);
+        setIntervalOutID(intervalId);
 
-        timeoutid = setTimeout(() => {
-            magnetometerSubscription?.unsubscribe();
-            accelSubscription?.unsubscribe();
-            gyroscopeSubscription?.unsubscribe();
-            setGyroscopeSubscription(null);
-            setSubscription(null);
-            setMagnetometerSubscription(null);
-            clearInterval(intervalId);
-            console.log('fired the timeout');
+        let timeoutid = setTimeout(() => {
+           magnetometerSubscription?.unsubscribe();
+           accelSubscription?.unsubscribe();
+           gyroscopeSubscription?.unsubscribe();
+           setGyroscopeSubscription(null);
+           setSubscription(null);
+           setMagnetometerSubscription(null);
+           clearInterval(intervalId);
+           setIntervalOutID(undefined);
+           console.log('fired the timeout');
         }, 5 * 1000);
+        setTimeoutID(timeoutid);
     };
     const stopSensors = () => {
-        stopAccelerometer();
-        stopGyroscope();
-        stopmagnetometer();
-        clearTimeout(timeoutid);
-        clearInterval(intervalId);
+        if(intervalOutId) {
+            clearInterval(intervalOutId);
+        }
+        setIntervalOutID(undefined);
+        magnetometerSubscription?.unsubscribe();
+        accelSubscription?.unsubscribe();
+        gyroscopeSubscription?.unsubscribe();
+        setGyroscopeSubscription(null);
+        setSubscription(null);
+        setMagnetometerSubscription(null);
+        if(timeoutId){
+            clearTimeout(timeoutId);
+        }
+        setIntervalOutID(undefined);
     };
 
     //set interval of 1 minutes after the sensors are started and updated the database
@@ -283,23 +297,23 @@ const Home: React.FC<Props> = ({ navigation }) => {
 
     const readData = async () => {
         let db: SQLiteDatabase | undefined = await getDBConnection();
-        if(db != undefined) {
+        if (db != undefined) {
             const sensordat: sensorDataType[] | null = await getData(db);
             if (sensordat != null) {
-                sensordat.forEach((data)=> {
+                sensordat.forEach((data) => {
                     console.log(data);
                 });
             }
-        }else {
+        } else {
             console.log("db connection failed");
-        }             
+        }
     };
-    
+
 
     useEffect(() => {
         readData();
     }, [magnetometerSubscription]);
-//=============
+    //=============
     return (
         <ScrollView>
             <View style={styleSheet.container}>
