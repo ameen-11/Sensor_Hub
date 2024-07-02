@@ -1,8 +1,4 @@
-import {
-    enablePromise,
-    openDatabase,
-    SQLiteDatabase,
-} from 'react-native-sqlite-storage';
+import { enablePromise,openDatabase, SQLiteDatabase,} from 'react-native-sqlite-storage';
 
 import uuid from "react-native-uuid";
 
@@ -11,17 +7,18 @@ const tableName = 'sensorData';
 enablePromise(true);
 
 export const getDBConnection = async () => {
-    //console.log("connecting to the database");
+     console.log("connecting to the database");
     try {
         let db: SQLiteDatabase = await openDatabase({ name: 'sensor.db', location: 'default' });
         return db;
     } catch (error) {
-        //console.log(error);
+        console.log(error);
         return undefined;
     }
 };
 
 export const createTable = async (db: SQLiteDatabase) => {
+
     // create table if not exists
     const query = `CREATE TABLE IF NOT EXISTS ${tableName}(
         id UUID PRIMARY KEY NOT NULL,
@@ -32,9 +29,9 @@ export const createTable = async (db: SQLiteDatabase) => {
         pitch Float,
         roll  Float,
         azimuth Float,
-        avx Float, 
+        avx Float,
         avy Float,
-        avz Float, 
+        avz Float,
         mfx Float,
         mfy Float,
         mfz Float,
@@ -43,11 +40,12 @@ export const createTable = async (db: SQLiteDatabase) => {
         altitude Float,
         haac Float
     );`;
-    //console.log("trying to create table");
+    console.log("trying to create table");
     try {
+
         await db.executeSql(query);
     } catch (error) {
-        //console.log("table creation query error", error);
+        console.log("table creation query error", error);
         return;
     }
 };
@@ -60,8 +58,8 @@ export const dropTable = async (db: SQLiteDatabase) => {
 
 export const insertData = async (db: SQLiteDatabase, data: sensorDataType) => {
     const insertQuery = `INSERT INTO ${tableName} (
-    id,timestamp, ax, ay, az, pitch, roll, azimuth, avx, 
-    avy, avz, mfx, mfy, mfz, latitude, longitude, altitude, haac) VALUES 
+    id,timestamp, ax, ay, az, pitch, roll, azimuth, avx,
+    avy, avz, mfx, mfy, mfz, latitude, longitude, altitude, haac) VALUES
     (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const values = [
         uuid.v4(),
@@ -84,14 +82,15 @@ export const insertData = async (db: SQLiteDatabase, data: sensorDataType) => {
         data.hacc
     ];
 
-    //console.log(values);
-   // console.log(insertQuery);
+console.log(values);
+    console.log(insertQuery);
     try {
-    //    console.log("trying to insert data");
+    console.log("trying to insert data");
         await db.executeSql(insertQuery, values);
+
         return;
     } catch (error) {
-     //   console.log("insertion query error ", error);
+    console.log("insertion query error ", error);
        return;
     }
 };

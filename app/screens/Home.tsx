@@ -26,7 +26,7 @@ import FontSize from '../constants/FontSize';
 import Colors from '../constants/Colors';
 import { Subscription } from 'rxjs';
 import { getDBConnection, insertData, getData, createTable } from '../db-service';
-import { SQLiteDatabase } from 'react-native-sqlite-storage';
+import { SQLiteDatabase,enablePromise } from 'react-native-sqlite-storage';
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 type Props = {
@@ -46,7 +46,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
     const [accelSubscription, setSubscription] = useState<Subscription | null>(
         null,
     );
-
+ const [sensorsActive, setSensorsActive] = useState(false);
     const startAccelerometer = () => {
         setUpdateIntervalForType(SensorTypes.accelerometer, 1000);
 
@@ -211,12 +211,12 @@ const Home: React.FC<Props> = ({ navigation }) => {
     };
     // =============== done sensors =======
 
-    // database 
+//     // database
     const createDB = async () => {
         const db: SQLiteDatabase | undefined = await getDBConnection();
-        if (db !== undefined) {
+
             await createTable(db);
-            const data: sensorDataType = {
+            const data= {
                 timestamp: new Date().toISOString(),
                 ax: accelerometerData.x,
                 ay: accelerometerData.y,
@@ -237,18 +237,57 @@ const Home: React.FC<Props> = ({ navigation }) => {
             };
             await insertData(db, data);
             await db.close();
-        }
-    };
 
-//    let timeoutid: ReturnType<typeof setTimeout>;
-//    let intervalId: ReturnType<typeof setInterval>;
-      const [timeoutId , setTimeoutID] = useState<ReturnType<typeof setTimeout> | undefined>(); 
-      const [intervalOutId , setIntervalOutID] = useState<ReturnType<typeof setInterval> | undefined>(); 
+
+//
+//         try {
+//             const response = await fetch('https://sensfit.nitk.ac.in/', {
+//                 method: 'POST',
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                 },
+//                 body: JSON.stringify(data),
+//             });
+//
+//             if (!response.ok) {
+//                 throw new Error('Failed to store sensor data');
+//             }
+//
+//             const result = await response.json();
+//             console.log('Sensor data stored:', result);
+//         } catch (error) {
+//             console.error('Error storing sensor data:', error);
+//         }
+    };
+  const data= {
+                 timestamp: new Date().toISOString(),
+                 ax: accelerometerData.x,
+                 ay: accelerometerData.y,
+                 az: accelerometerData.z,
+                 pitch: pitchData,
+                 roll: rollData,
+                 azimuth: azimuthData,
+                 avx: gyroscopeData.x,
+                 avy: gyroscopeData.y,
+                 avz: gyroscopeData.z,
+                 mfx: magnetometerData.x,
+                 mfy: magnetometerData.y,
+                 mfz: magnetometerData.z,
+                 latitude: latitude,
+                 longitude: longitude,
+                 altitude: altitude,
+                 hacc: accuracy,
+             };
+   let timeoutid: ReturnType<typeof setTimeout>;
+   let intervalId: ReturnType<typeof setInterval>;
+      const [timeoutId , setTimeoutID] = useState<ReturnType<typeof setTimeout> | undefined>();
+      const [intervalOutId , setIntervalOutID] = useState<ReturnType<typeof setInterval> | undefined>();
 
     const startSensors = () => {
         startAccelerometer();
         startGyroscope();
         startMagnetometer();
+        setSensorsActive(true);
         console.log('started collecting data');
         let intervalId = setInterval(async () => {
             console.log('database call');
@@ -284,6 +323,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
             clearTimeout(timeoutId);
         }
         setIntervalOutID(undefined);
+        setSensorsActive(false);
     };
 
     //set interval of 1 minutes after the sensors are started and updated the database
@@ -295,24 +335,39 @@ const Home: React.FC<Props> = ({ navigation }) => {
         console.log(magnetometerData);
     }, [magnetometerData]);
 
-    const readData = async () => {
-        let db: SQLiteDatabase | undefined = await getDBConnection();
-        if (db != undefined) {
-            const sensordat: sensorDataType[] | null = await getData(db);
-            if (sensordat != null) {
-                sensordat.forEach((data) => {
-                    console.log(data);
-                });
+
+ const handleInsert = async () => {
+    const db = await getDBConnection();
+    if (db) {
+      console.log("Inserting data");
+      await insertData(db, data);
+
+      console.log("Data inserted successfully");
+    }
+  };
+
+  useEffect(() => {
+  let intervalId: ReturnType<typeof setInterval>;
+        let timeoutId: ReturnType<typeof setTimeout>;
+
+      if (sensorsActive) {
+                  intervalId = setInterval(() => {
+                      console.log('Database call');
+                      handleInsert();
+                  }, 1000);
+        const timeout = setTimeout(() => {
+              stopSensors();
+
+      console.log("Stopped collecting data after 5 seconds");
+    }, 5000);
+    setTimeoutID(timeoutId);
             }
-        } else {
-            console.log("db connection failed");
-        }
-    };
+        return () => {
+                    if (intervalId) clearInterval(intervalId);
+                    if (timeoutId) clearTimeout(timeoutId);
+                };
 
-
-    useEffect(() => {
-        readData();
-    }, [magnetometerSubscription]);
+    }, [sensorsActive]);
     //=============
     return (
         <ScrollView>
@@ -373,6 +428,11 @@ const Home: React.FC<Props> = ({ navigation }) => {
                 <TouchableOpacity onPress={logOut} style={styleSheet.btnTouchableOp}>
                     <Text style={styleSheet.btnText}>Logout</Text>
                 </TouchableOpacity>
+
+                <TouchableOpacity onPress={handleInsert} style={styleSheet.btnTouchableOp}>
+                    <Text style={styleSheet.btnText}>data</Text>
+                </TouchableOpacity>
+
             </View>
         </ScrollView>
     );
