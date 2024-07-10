@@ -45,7 +45,7 @@ export const createTable = async (db: SQLiteDatabase) => {
 
         await db.executeSql(query);
     } catch (error) {
-        console.log("table creation query error", error);
+        //console.log("table creation query error", error);
         return;
     }
 };
@@ -82,15 +82,14 @@ export const insertData = async (db: SQLiteDatabase, data: sensorDataType) => {
         data.hacc
     ];
 
-console.log(values);
-    console.log(insertQuery);
+    //console.log(values);
+   // console.log(insertQuery);
     try {
-    console.log("trying to insert data");
+    //    console.log("trying to insert data");
         await db.executeSql(insertQuery, values);
-
         return;
     } catch (error) {
-    console.log("insertion query error ", error);
+     //   console.log("insertion query error ", error);
        return;
     }
 };

@@ -1,63 +1,124 @@
-// Import necessary modules
-const express = require('express');
-const bodyParser = require('body-parser');
-const sqlite3 = require('sqlite3').verbose(); // SQLite3 module
+const { v4: uuidv4 } = require('uuid');
+const http = require('http');
+const url = require('url');
+const sqlite3 = require('sqlite3');
+const hostname = '192.168.0.104';
+const port = 4001;
+const tableName = 'sensorData';
 
-// Create an Express app
-const app = express();
-const port = 3000; // Choose your desired port
+// Create and configure the database connection
+let db = new sqlite3.Database('./sensorData.db', (err) => {
+  if (err) {
+    console.error(err.message);
+  } else {
+    console.log('Connected to the sensorData SQLite database.');
+  }
+});
 
-// Middleware to parse JSON requests
-app.use(bodyParser.json());
 
-// SQLite database connection
-const dbPath = './data/sensorData.db'; // Path to your SQLite database file
-const db = new sqlite3.Database(dbPath);
 
-// Endpoint to store sensor data
-app.post('/api/sensorData', (req, res) => {
-    const data = req.body; // Assuming your request body contains sensor data
-    
-    console.log('Received sensor data:', data); // Add this line to log received data
-    
-    // Insert data into SQLite database
-    const insertQuery = `
-        INSERT INTO sensor_data (timestamp, ax, ay, az, pitch, roll, azimuth, avx, avy, avz, mfx, mfy, mfz, latitude, longitude, altitude, hacc)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    const values = [
-        data.timestamp,
-        data.ax,
-        data.ay,
-        data.az,
-        data.pitch,
-        data.roll,
-        data.azimuth,
-        data.avx,
-        data.avy,
-        data.avz,
-        data.mfx,
-        data.mfy,
-        data.mfz,
-        data.latitude,
-        data.longitude,
-        data.altitude,
-        data.hacc,
-    ];
+// Create table for sensor data
+db.run(`CREATE TABLE IF NOT EXISTS sensorData (
+  id TEXT PRIMARY KEY NOT NULL,
+  timestamp TEXT NOT NULL,
+  ax REAL,
+  ay REAL,
+  az REAL,
+  pitch REAL,
+  roll REAL,
+  azimuth REAL,
+  avx REAL,
+  avy REAL,
+  avz REAL,
+  mfx REAL,
+  mfy REAL,
+  mfz REAL,
+  latitude REAL,
+  longitude REAL,
+  altitude REAL,
+  haac REAL
+)`);
 
-    db.run(insertQuery, values, function (err) {
-        if (err) {
-            console.error('Error inserting data:', err.message);
-            res.status(500).json({ error: 'Failed to store sensor data' });
-        } else {
-            console.log(`Rows inserted ${this.changes}`);
-            res.status(200).json({ message: 'Sensor data stored successfully' });
-        }
+const requestListener = (req, res) => {
+  const reqUrl = url.parse(req.url, true);
+
+  if (req.method === 'POST' && reqUrl.pathname === '/api/sensors') {
+    let body = '';
+
+    req.on('data', chunk => {
+      body += chunk.toString();
     });
-    res.status(200).json({ message: 'Sensor data stored successfully' });
+
+    req.on('end', () => {
+      const {
+        timestamp,
+        ax,
+        ay,
+        az,
+        pitch,
+        roll,
+        azimuth,
+        avx,
+        avy,
+        avz,
+        mfx,
+        mfy,
+        mfz,
+        latitude,
+        longitude,
+        altitude,
+        haac
+      } = JSON.parse(body);
+
+      const id = uuidv4();
+
+      const query = `INSERT INTO sensorData (
+        id, timestamp, ax, ay, az, pitch, roll, azimuth, avx,
+        avy, avz, mfx, mfy, mfz, latitude, longitude, altitude, haac
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+      db.run(query, [
+        id,
+        timestamp,
+        ax,
+        ay,
+        az,
+        pitch,
+        roll,
+        azimuth,
+        avx,
+        avy,
+        avz,
+        mfx,
+        mfy,
+        mfz,
+        latitude,
+        longitude,
+        altitude,
+        haac
+      ], function (err) {
+        if (err) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: err.message }));
+          return;
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ id }));
+        db.close();
+      });
+    });
+  } else {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not Found' }));
+  }
+};
+
+const server = http.createServer(requestListener);
+
+server.listen(port, hostname, () => {
+  console.log(`Server running at http://${hostname}:${port}/`);
 });
 
-// Start the server
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-});
+// Properly close the database connection when the server is shutting down
+
+

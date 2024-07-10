@@ -3,7 +3,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import auth from '@react-native-firebase/auth';
 import Geolocation from '@react-native-community/geolocation';
-
+import axios from 'axios';
+import uuid from "react-native-uuid";
 import {
     accelerometer,
     gyroscope,
@@ -212,54 +213,41 @@ const Home: React.FC<Props> = ({ navigation }) => {
     // =============== done sensors =======
 
 //     // database
-    const createDB = async () => {
-        const db: SQLiteDatabase | undefined = await getDBConnection();
-
-            await createTable(db);
-            const data= {
-                timestamp: new Date().toISOString(),
-                ax: accelerometerData.x,
-                ay: accelerometerData.y,
-                az: accelerometerData.z,
-                pitch: pitchData,
-                roll: rollData,
-                azimuth: azimuthData,
-                avx: gyroscopeData.x,
-                avy: gyroscopeData.y,
-                avz: gyroscopeData.z,
-                mfx: magnetometerData.x,
-                mfy: magnetometerData.y,
-                mfz: magnetometerData.z,
-                latitude: latitude,
-                longitude: longitude,
-                altitude: altitude,
-                hacc: accuracy,
-            };
-            await insertData(db, data);
-            await db.close();
 
 
-//
-//         try {
-//             const response = await fetch('https://sensfit.nitk.ac.in/', {
-//                 method: 'POST',
-//                 headers: {
-//                     'Content-Type': 'application/json',
-//                 },
-//                 body: JSON.stringify(data),
-//             });
-//
-//             if (!response.ok) {
-//                 throw new Error('Failed to store sensor data');
+
+//     const createDB = async () => {
+//         const db: SQLiteDatabase | undefined = await getDBConnection();
+//         if (db !== undefined) {
+//             await createTable(db);
+//             const data: sensorDataType = {
+//                 timestamp: new Date().toISOString(),
+//                 ax: accelerometerData.x,
+//                 ay: accelerometerData.y,
+//                 az: accelerometerData.z,
+//                 pitch: pitchData,
+//                 roll: rollData,
+//                 azimuth: azimuthData,
+//                 avx: gyroscopeData.x,
+//                 avy: gyroscopeData.y,
+//                 avz: gyroscopeData.z,
+//                 mfx: magnetometerData.x,
+//                 mfy: magnetometerData.y,
+//                 mfz: magnetometerData.z,
+//                 latitude: latitude,
+//                 longitude: longitude,
+//                 altitude: altitude,
+//                 hacc: accuracy,
+//             };
+//             await insertData(db, data);
+//             await db.close();
 //             }
 //
-//             const result = await response.json();
-//             console.log('Sensor data stored:', result);
-//         } catch (error) {
-//             console.error('Error storing sensor data:', error);
-//         }
-    };
+//
+//
+//     };
   const data= {
+                 id:uuid,
                  timestamp: new Date().toISOString(),
                  ax: accelerometerData.x,
                  ay: accelerometerData.y,
@@ -282,16 +270,65 @@ const Home: React.FC<Props> = ({ navigation }) => {
    let intervalId: ReturnType<typeof setInterval>;
       const [timeoutId , setTimeoutID] = useState<ReturnType<typeof setTimeout> | undefined>();
       const [intervalOutId , setIntervalOutID] = useState<ReturnType<typeof setInterval> | undefined>();
+//     // database
+//     const createDB = async () => {
+//         const db: SQLiteDatabase | undefined = await getDBConnection();
+//
+//             await createTable(db);
+//             const data= {
+//                 timestamp: new Date().toISOString(),
+//                 ax: accelerometerData.x,
+//                 ay: accelerometerData.y,
+//                 az: accelerometerData.z,
+//                 pitch: pitchData,
+//                 roll: rollData,
+//                 azimuth: azimuthData,
+//                 avx: gyroscopeData.x,
+//                 avy: gyroscopeData.y,
+//                 avz: gyroscopeData.z,
+//                 mfx: magnetometerData.x,
+//                 mfy: magnetometerData.y,
+//                 mfz: magnetometerData.z,
+//                 latitude: latitude,
+//                 longitude: longitude,
+//                 altitude: altitude,
+//                 hacc: accuracy,
+//             };
+//             await insertData(db, data);
+//             await db.close();
+//
+//
+//
+//         try {
+//             const response = await fetch('https://sensfit.nitk.ac.in/', {
+//                 method: 'POST',
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                 },
+//                 body: JSON.stringify(data),
+//             });
+//
+//             if (!response.ok) {
+//                 throw new Error('Failed to store sensor data');
+//             }
+//
+//             const result = await response.json();
+//             console.log('Sensor data stored:', result);
+//         } catch (error) {
+//             console.error('Error storing sensor data:', error);
+//         }
+//     };
 
     const startSensors = () => {
+
         startAccelerometer();
         startGyroscope();
         startMagnetometer();
         setSensorsActive(true);
         console.log('started collecting data');
         let intervalId = setInterval(async () => {
-            console.log('database call');
-            createDB();
+              postData();
+
         }, 1000);
         setIntervalOutID(intervalId);
 
@@ -304,7 +341,9 @@ const Home: React.FC<Props> = ({ navigation }) => {
            setMagnetometerSubscription(null);
            clearInterval(intervalId);
            setIntervalOutID(undefined);
-           console.log('fired the timeout');
+
+           stopSensors();
+                       console.log('Stopped collecting data after 5 seconds');
         }, 5 * 1000);
         setTimeoutID(timeoutid);
     };
@@ -312,10 +351,12 @@ const Home: React.FC<Props> = ({ navigation }) => {
         if(intervalOutId) {
             clearInterval(intervalOutId);
         }
+
         setIntervalOutID(undefined);
         magnetometerSubscription?.unsubscribe();
         accelSubscription?.unsubscribe();
         gyroscopeSubscription?.unsubscribe();
+
         setGyroscopeSubscription(null);
         setSubscription(null);
         setMagnetometerSubscription(null);
@@ -345,6 +386,77 @@ const Home: React.FC<Props> = ({ navigation }) => {
       console.log("Data inserted successfully");
     }
   };
+
+  useEffect(() => {
+  let intervalId: ReturnType<typeof setInterval>;
+        let timeoutId: ReturnType<typeof setTimeout>;
+
+      if (sensorsActive) {
+                  intervalId = setInterval(() => {
+                      console.log('Database call');
+                      handleInsert();
+                  }, 1000);
+        const timeout = setTimeout(() => {
+              stopSensors();
+
+      console.log("Stopped collecting data after 5 seconds");
+    }, 5000);
+    setTimeoutID(timeoutId);
+            }
+        return () => {
+                    if (intervalId) clearInterval(intervalId);
+                    if (timeoutId) clearTimeout(timeoutId);
+                };
+
+    }, [sensorsActive]);
+
+
+const postData = async () => {
+
+
+    try {
+// instead of url paste the website url
+      const response = await axios.post('url', {
+                        id:uuid.v4().toString(),
+                        timestamp: new Date().toISOString(),
+                        ax: data.x,
+                        ay: accelerometerData.y,
+                        az: accelerometerData.z,
+                        pitch: pitchData,
+                        roll: rollData,
+                        azimuth: azimuthData,
+                        avx: gyroscopeData.x,
+                        avy: gyroscopeData.y,
+                        avz: gyroscopeData.z,
+                        mfx: magnetometerData.x,
+                        mfy: magnetometerData.y,
+                        mfz: magnetometerData.z,
+                        latitude: latitude,
+                        longitude: longitude,
+                        altitude: altitude,
+                        hacc: accuracy,
+      })
+      console.log('Data posted:', response.data);
+    } catch (error) {
+     if (error.response) {
+         // The request was made and the server responded with a status code
+         console.log('Server responded with non-2xx status:', error.response.data);
+         console.log('Status code:', error.response.status);
+       } else if (error.request) {
+         // The request was made but no response was received
+         console.log('No response received:', error.request);
+       } else {
+         // Something happened in setting up the request that triggered an Error
+         console.error('Request failed:', error.message);
+       }
+    }
+  };
+
+
+
+
+
+
 
   useEffect(() => {
   let intervalId: ReturnType<typeof setInterval>;
@@ -429,9 +541,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
                     <Text style={styleSheet.btnText}>Logout</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={handleInsert} style={styleSheet.btnTouchableOp}>
-                    <Text style={styleSheet.btnText}>data</Text>
-                </TouchableOpacity>
+
 
             </View>
         </ScrollView>
@@ -511,5 +621,4 @@ const styleSheet = StyleSheet.create({
         flex: 1,
     },
 });
-
 export default Home;
