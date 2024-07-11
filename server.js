@@ -96,7 +96,9 @@ const requestListener = (req, res) => {
         longitude,
         altitude,
         haac
-      ], function (err) {
+      ]
+
+      , function (err) {
         if (err) {
           res.writeHead(500, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: err.message }));
