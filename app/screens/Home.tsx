@@ -5,6 +5,7 @@ import auth from '@react-native-firebase/auth';
 import Geolocation from '@react-native-community/geolocation';
 import axios from 'axios';
 import uuid from "react-native-uuid";
+import  getAuth from "@react-native-firebase/auth"
 import {
     accelerometer,
     gyroscope,
@@ -27,7 +28,7 @@ import FontSize from '../constants/FontSize';
 import Colors from '../constants/Colors';
 import { Subscription } from 'rxjs';
 import { getDBConnection, insertData, getData, createTable } from '../db-service';
-import { SQLiteDatabase,enablePromise } from 'react-native-sqlite-storage';
+import { SQLiteDatabase, enablePromise } from 'react-native-sqlite-storage';
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 type Props = {
@@ -47,7 +48,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
     const [accelSubscription, setSubscription] = useState<Subscription | null>(
         null,
     );
- const [sensorsActive, setSensorsActive] = useState(false);
+    const [sensorsActive, setSensorsActive] = useState(false);
     const startAccelerometer = () => {
         setUpdateIntervalForType(SensorTypes.accelerometer, 1000);
 
@@ -212,112 +213,112 @@ const Home: React.FC<Props> = ({ navigation }) => {
     };
     // =============== done sensors =======
 
-//     // database
+    //     // database
 
 
 
-//     const createDB = async () => {
-//         const db: SQLiteDatabase | undefined = await getDBConnection();
-//         if (db !== undefined) {
-//             await createTable(db);
-//             const data: sensorDataType = {
-//                 timestamp: new Date().toISOString(),
-//                 ax: accelerometerData.x,
-//                 ay: accelerometerData.y,
-//                 az: accelerometerData.z,
-//                 pitch: pitchData,
-//                 roll: rollData,
-//                 azimuth: azimuthData,
-//                 avx: gyroscopeData.x,
-//                 avy: gyroscopeData.y,
-//                 avz: gyroscopeData.z,
-//                 mfx: magnetometerData.x,
-//                 mfy: magnetometerData.y,
-//                 mfz: magnetometerData.z,
-//                 latitude: latitude,
-//                 longitude: longitude,
-//                 altitude: altitude,
-//                 hacc: accuracy,
-//             };
-//             await insertData(db, data);
-//             await db.close();
-//             }
-//
-//
-//
-//     };
-  const data= {
-                 id:uuid,
-                 timestamp: new Date().toISOString(),
-                 ax: accelerometerData.x,
-                 ay: accelerometerData.y,
-                 az: accelerometerData.z,
-                 pitch: pitchData,
-                 roll: rollData,
-                 azimuth: azimuthData,
-                 avx: gyroscopeData.x,
-                 avy: gyroscopeData.y,
-                 avz: gyroscopeData.z,
-                 mfx: magnetometerData.x,
-                 mfy: magnetometerData.y,
-                 mfz: magnetometerData.z,
-                 latitude: latitude,
-                 longitude: longitude,
-                 altitude: altitude,
-                 hacc: accuracy,
-             };
-   let timeoutid: ReturnType<typeof setTimeout>;
-   let intervalId: ReturnType<typeof setInterval>;
-      const [timeoutId , setTimeoutID] = useState<ReturnType<typeof setTimeout> | undefined>();
-      const [intervalOutId , setIntervalOutID] = useState<ReturnType<typeof setInterval> | undefined>();
-//     // database
-//     const createDB = async () => {
-//         const db: SQLiteDatabase | undefined = await getDBConnection();
-//
-//             await createTable(db);
-//             const data= {
-//                 timestamp: new Date().toISOString(),
-//                 ax: accelerometerData.x,
-//                 ay: accelerometerData.y,
-//                 az: accelerometerData.z,
-//                 pitch: pitchData,
-//                 roll: rollData,
-//                 azimuth: azimuthData,
-//                 avx: gyroscopeData.x,
-//                 avy: gyroscopeData.y,
-//                 avz: gyroscopeData.z,
-//                 mfx: magnetometerData.x,
-//                 mfy: magnetometerData.y,
-//                 mfz: magnetometerData.z,
-//                 latitude: latitude,
-//                 longitude: longitude,
-//                 altitude: altitude,
-//                 hacc: accuracy,
-//             };
-//             await insertData(db, data);
-//             await db.close();
-//
-//
-//
-//         try {
-//             const response = await fetch('https://sensfit.nitk.ac.in/', {
-//                 method: 'POST',
-//                 headers: {
-//                     'Content-Type': 'application/json',
-//                 },
-//                 body: JSON.stringify(data),
-//             });
-//
-//             if (!response.ok) {
-//                 throw new Error('Failed to store sensor data');
-//             }
-//
-//             const result = await response.json();
-//             console.log('Sensor data stored:', result);
-//         } catch (error) {
-//             console.error('Error storing sensor data:', error);
-//         }
-//     };
+    //     const createDB = async () => {
+    //         const db: SQLiteDatabase | undefined = await getDBConnection();
+    //         if (db !== undefined) {
+    //             await createTable(db);
+    //             const data: sensorDataType = {
+    //                 timestamp: new Date().toISOString(),
+    //                 ax: accelerometerData.x,
+    //                 ay: accelerometerData.y,
+    //                 az: accelerometerData.z,
+    //                 pitch: pitchData,
+    //                 roll: rollData,
+    //                 azimuth: azimuthData,
+    //                 avx: gyroscopeData.x,
+    //                 avy: gyroscopeData.y,
+    //                 avz: gyroscopeData.z,
+    //                 mfx: magnetometerData.x,
+    //                 mfy: magnetometerData.y,
+    //                 mfz: magnetometerData.z,
+    //                 latitude: latitude,
+    //                 longitude: longitude,
+    //                 altitude: altitude,
+    //                 hacc: accuracy,
+    //             };
+    //             await insertData(db, data);
+    //             await db.close();
+    //             }
+    //
+    //
+    //
+    //     };
+    const data = {
+        id: uuid,
+        timestamp: new Date().toISOString(),
+        ax: accelerometerData.x,
+        ay: accelerometerData.y,
+        az: accelerometerData.z,
+        pitch: pitchData,
+        roll: rollData,
+        azimuth: azimuthData,
+        avx: gyroscopeData.x,
+        avy: gyroscopeData.y,
+        avz: gyroscopeData.z,
+        mfx: magnetometerData.x,
+        mfy: magnetometerData.y,
+        mfz: magnetometerData.z,
+        latitude: latitude,
+        longitude: longitude,
+        altitude: altitude,
+        hacc: accuracy,
+    };
+    let timeoutid: ReturnType<typeof setTimeout>;
+    let intervalId: ReturnType<typeof setInterval>;
+    const [timeoutId, setTimeoutID] = useState<ReturnType<typeof setTimeout> | undefined>();
+    const [intervalOutId, setIntervalOutID] = useState<ReturnType<typeof setInterval> | undefined>();
+    //     // database
+    //     const createDB = async () => {
+    //         const db: SQLiteDatabase | undefined = await getDBConnection();
+    //
+    //             await createTable(db);
+    //             const data= {
+    //                 timestamp: new Date().toISOString(),
+    //                 ax: accelerometerData.x,
+    //                 ay: accelerometerData.y,
+    //                 az: accelerometerData.z,
+    //                 pitch: pitchData,
+    //                 roll: rollData,
+    //                 azimuth: azimuthData,
+    //                 avx: gyroscopeData.x,
+    //                 avy: gyroscopeData.y,
+    //                 avz: gyroscopeData.z,
+    //                 mfx: magnetometerData.x,
+    //                 mfy: magnetometerData.y,
+    //                 mfz: magnetometerData.z,
+    //                 latitude: latitude,
+    //                 longitude: longitude,
+    //                 altitude: altitude,
+    //                 hacc: accuracy,
+    //             };
+    //             await insertData(db, data);
+    //             await db.close();
+    //
+    //
+    //
+    //         try {
+    //             const response = await fetch('https://sensfit.nitk.ac.in/', {
+    //                 method: 'POST',
+    //                 headers: {
+    //                     'Content-Type': 'application/json',
+    //                 },
+    //                 body: JSON.stringify(data),
+    //             });
+    //
+    //             if (!response.ok) {
+    //                 throw new Error('Failed to store sensor data');
+    //             }
+    //
+    //             const result = await response.json();
+    //             console.log('Sensor data stored:', result);
+    //         } catch (error) {
+    //             console.error('Error storing sensor data:', error);
+    //         }
+    //     };
 
     const startSensors = () => {
 
@@ -327,28 +328,28 @@ const Home: React.FC<Props> = ({ navigation }) => {
         setSensorsActive(true);
         console.log('started collecting data');
         let intervalId = setInterval(async () => {
-              postData();
+            postData();
 
         }, 1000);
         setIntervalOutID(intervalId);
 
         let timeoutid = setTimeout(() => {
-           magnetometerSubscription?.unsubscribe();
-           accelSubscription?.unsubscribe();
-           gyroscopeSubscription?.unsubscribe();
-           setGyroscopeSubscription(null);
-           setSubscription(null);
-           setMagnetometerSubscription(null);
-           clearInterval(intervalId);
-           setIntervalOutID(undefined);
+            magnetometerSubscription?.unsubscribe();
+            accelSubscription?.unsubscribe();
+            gyroscopeSubscription?.unsubscribe();
+            setGyroscopeSubscription(null);
+            setSubscription(null);
+            setMagnetometerSubscription(null);
+            clearInterval(intervalId);
+            setIntervalOutID(undefined);
 
-           stopSensors();
-                       console.log('Stopped collecting data after 5 seconds');
+            stopSensors();
+            console.log('Stopped collecting data after 5 seconds');
         }, 5 * 1000);
         setTimeoutID(timeoutid);
     };
     const stopSensors = () => {
-        if(intervalOutId) {
+        if (intervalOutId) {
             clearInterval(intervalOutId);
         }
 
@@ -360,7 +361,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
         setGyroscopeSubscription(null);
         setSubscription(null);
         setMagnetometerSubscription(null);
-        if(timeoutId){
+        if (timeoutId) {
             clearTimeout(timeoutId);
         }
         setIntervalOutID(undefined);
@@ -377,107 +378,100 @@ const Home: React.FC<Props> = ({ navigation }) => {
     }, [magnetometerData]);
 
 
- const handleInsert = async () => {
-    const db = await getDBConnection();
-    if (db) {
-      console.log("Inserting data");
-      await insertData(db, data);
+    const handleInsert = async () => {
+        const db = await getDBConnection();
+        if (db) {
+            console.log("Inserting data");
+            await insertData(db, data);
 
-      console.log("Data inserted successfully");
-    }
-  };
+            console.log("Data inserted successfully");
+        }
+    };
 
-  useEffect(() => {
-  let intervalId: ReturnType<typeof setInterval>;
+    useEffect(() => {
+        let intervalId: ReturnType<typeof setInterval>;
         let timeoutId: ReturnType<typeof setTimeout>;
 
-      if (sensorsActive) {
-                  intervalId = setInterval(() => {
-                      console.log('Database call');
-                      handleInsert();
-                  }, 1000);
-        const timeout = setTimeout(() => {
-              stopSensors();
+        if (sensorsActive) {
+            intervalId = setInterval(() => {
+                console.log('Database call');
+                handleInsert();
+            }, 1000);
+            const timeout = setTimeout(() => {
+                stopSensors();
 
-      console.log("Stopped collecting data after 5 seconds");
-    }, 5000);
-    setTimeoutID(timeoutId);
-            }
+                console.log("Stopped collecting data after 5 seconds");
+            }, 5000);
+            setTimeoutID(timeout);
+        }
         return () => {
-                    if (intervalId) clearInterval(intervalId);
-                    if (timeoutId) clearTimeout(timeoutId);
-                };
+            if (intervalId) clearInterval(intervalId);
+            if (timeoutId) clearTimeout(timeoutId);
+        };
 
     }, [sensorsActive]);
 
 
-const postData = async () => {
+    const postData = async () => {
+        try {
+            // instead of url paste the website url
+            const response = await axios.post('http://sensfit.nitk.ac.in/', {
+                userid: getAuth().currentUser?.uid,
+                timestamp: new Date().toISOString(),
+                ax: data.ax,
+                ay: accelerometerData.x,
+                az: accelerometerData.z,
+                pitch: pitchData,
+                roll: rollData,
+                azimuth: azimuthData,
+                avx: gyroscopeData.x,
+                avy: gyroscopeData.y,
+                avz: gyroscopeData.z,
+                mfx: magnetometerData.x,
+                mfy: magnetometerData.y,
+                mfz: magnetometerData.z,
+                latitude: latitude,
+                longitude: longitude,
+                altitude: altitude,
+                hacc: accuracy,
+            })
+            console.log('Data posted:', response.status);
+        }
+        catch (error : any) {
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                console.log('Server responded with non-2xx status:', error.response.data);
+                console.log('Status code:', error.response.status);
+            } else if (error.request) {
+                // The request was made but no response was received
+                console.log('No response received:', error.request);
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                console.error('Request failed:', error.message);
+            }
+        }
+    };
 
-
-    try {
-// instead of url paste the website url
-      const response = await axios.post('https://sensfit.nitk.ac.in/', {
-                        id:data.id,
-                        timestamp: new Date().toISOString(),
-                        ax: data.x,
-                        ay: accelerometerData.y,
-                        az: accelerometerData.z,
-                        pitch: pitchData,
-                        roll: rollData,
-                        azimuth: azimuthData,
-                        avx: gyroscopeData.x,
-                        avy: gyroscopeData.y,
-                        avz: gyroscopeData.z,
-                        mfx: magnetometerData.x,
-                        mfy: magnetometerData.y,
-                        mfz: magnetometerData.z,
-                        latitude: latitude,
-                        longitude: longitude,
-                        altitude: altitude,
-                        hacc: accuracy,
-      })
-      console.log('Data posted:', response.data);
-    } catch (error) {
-     if (error.response) {
-         // The request was made and the server responded with a status code
-         console.log('Server responded with non-2xx status:', error.response.data);
-         console.log('Status code:', error.response.status);
-       } else if (error.request) {
-         // The request was made but no response was received
-         console.log('No response received:', error.request);
-       } else {
-         // Something happened in setting up the request that triggered an Error
-         console.error('Request failed:', error.message);
-       }
-    }
-  };
-
-
-
-
-
-
-
-  useEffect(() => {
-  let intervalId: ReturnType<typeof setInterval>;
+    useEffect(() => {
+        let intervalId: ReturnType<typeof setInterval>;
         let timeoutId: ReturnType<typeof setTimeout>;
 
-      if (sensorsActive) {
-                  intervalId = setInterval(() => {
-                      console.log('Database call');
-                      handleInsert();
-                  }, 1000);
-        const timeout = setTimeout(() => {
-              stopSensors();
+        if (sensorsActive) {
+            intervalId = setInterval(() => {
+                console.log('Database call');
+                handleInsert();
+            }, 1000);
+            const timeout = setTimeout(() => {
+                stopSensors();
 
-      console.log("Stopped collecting data after 5 seconds");
-    }, 5000);
-    setTimeoutID(timeoutId);
-            }
+                console.log("Stopped collecting data after 5 seconds");
+            }, 5000);
+            setTimeoutID(timeout);
+        }
         return () => {
-                    if (intervalId) clearInterval(intervalId);
-                    if (timeoutId) clearTimeout(timeoutId);
-                };
+            if (intervalId) clearInterval(intervalId);
+            if (timeoutId) clearTimeout(timeoutId);
+        };
 
     }, [sensorsActive]);
     //=============
