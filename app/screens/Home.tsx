@@ -416,7 +416,7 @@ const postData = async () => {
 
     try {
 // instead of url paste the website url
-      const response = await axios.post('url/api/sensors', {
+      const response = await axios.post('https://sensfit.nitk.ac.in/', {
                         id:data.id,
                         timestamp: new Date().toISOString(),
                         ax: data.x,
