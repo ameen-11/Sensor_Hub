@@ -466,7 +466,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
 
                 console.log("Stopped collecting data after 5 seconds");
             }, 5000);
-            setTimeoutID(timeoutId);
+            setTimeoutID(timeout);
         }
         return () => {
             if (intervalId) clearInterval(intervalId);
