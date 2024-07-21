@@ -413,43 +413,43 @@ const Home: React.FC<Props> = ({ navigation }) => {
 
     const postData = async () => {
 
-        try {
-            // instead of url paste the website url
-            const response = await axios.post('http://10.0.2.2:8000/send_data/', {
-                userid: data.id.OID,
-                timestamp: new Date().toISOString(),
-                ax: data.ax,
-                ay: accelerometerData.x,
-                az: accelerometerData.z,
-                pitch: pitchData,
-                roll: rollData,
-                azimuth: azimuthData,
-                avx: gyroscopeData.x,
-                avy: gyroscopeData.y,
-                avz: gyroscopeData.z,
-                mfx: magnetometerData.x,
-                mfy: magnetometerData.y,
-                mfz: magnetometerData.z,
-                latitude: latitude,
-                longitude: longitude,
-                altitude: altitude,
-                hacc: accuracy,
-            })
-            console.log('Data posted:', response.status);
-        } catch (error) {
-            if (error.response) {
-                // The request was made and the server responded with a status code
-                console.log('Server responded with non-2xx status:', error.response.data);
-                console.log('Status code:', error.response.status);
-            } else if (error.request) {
-                // The request was made but no response was received
-                console.log('No response received:', error.request);
-            } else {
-                // Something happened in setting up the request that triggered an Error
-                console.error('Request failed:', error.message);
-            }
-        }
-    };
+    try {
+// instead of url paste the website url
+      const response = await axios.post('https://sensfit.nitk.ac.in/', {
+                        id:data.id,
+                        timestamp: new Date().toISOString(),
+                        ax: data.x,
+                        ay: accelerometerData.y,
+                        az: accelerometerData.z,
+                        pitch: pitchData,
+                        roll: rollData,
+                        azimuth: azimuthData,
+                        avx: gyroscopeData.x,
+                        avy: gyroscopeData.y,
+                        avz: gyroscopeData.z,
+                        mfx: magnetometerData.x,
+                        mfy: magnetometerData.y,
+                        mfz: magnetometerData.z,
+                        latitude: latitude,
+                        longitude: longitude,
+                        altitude: altitude,
+                        hacc: accuracy,
+      })
+      console.log('Data posted:', response.data);
+    } catch (error) {
+     if (error.response) {
+         // The request was made and the server responded with a status code
+         console.log('Server responded with non-2xx status:', error.response.data);
+         console.log('Status code:', error.response.status);
+       } else if (error.request) {
+         // The request was made but no response was received
+         console.log('No response received:', error.request);
+       } else {
+         // Something happened in setting up the request that triggered an Error
+         console.error('Request failed:', error.message);
+       }
+    }
+  };
 
 
 
