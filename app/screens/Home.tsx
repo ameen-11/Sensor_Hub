@@ -435,6 +435,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
                 altitude: altitude,
                 hacc: accuracy,
             })
+            console.log(response);
             console.log('Data posted:', response.status);
         }
         catch (error : any) {
