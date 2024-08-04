@@ -415,7 +415,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
     const postData = async () => {
         try {
             // instead of url paste the website url
-            const response = await axios.post('http://sensfit.nitk.ac.in/', {
+            const response = await axios.post('http://10.0.2.2:8000/send_data/', {
                 userid: getAuth().currentUser?.uid,
                 timestamp: new Date().toISOString(),
                 ax: data.ax,
@@ -434,8 +434,8 @@ const Home: React.FC<Props> = ({ navigation }) => {
                 longitude: longitude,
                 altitude: altitude,
                 hacc: accuracy,
-            })
-            console.log(response);
+            });
+            //console.log(response);
             console.log('Data posted:', response.status);
         }
         catch (error : any) {
