@@ -7,13 +7,21 @@ import axios from 'axios';
 import uuid from "react-native-uuid";
 import  getAuth from "@react-native-firebase/auth"
 import {
+  LineChart,
+  BarChart,
+  PieChart,
+  ProgressChart,
+  ContributionGraph,
+  StackedBarChart
+} from "react-native-chart-kit";
+import {
     accelerometer,
     gyroscope,
     setUpdateIntervalForType,
     SensorTypes,
     magnetometer,
 } from 'react-native-sensors';
-
+import { Dimensions } from 'react-native';
 import {
     Text,
     View,
@@ -171,6 +179,8 @@ const Home: React.FC<Props> = ({ navigation }) => {
                 setLatitude(position.coords.latitude);
                 setLongitude(position.coords.longitude);
                 setAltitude(position.coords.altitude);
+
+
                 console.log('Latitude:', position.coords.latitude);
                 console.log('Longitude:', position.coords.longitude);
                 console.log('Altitude:', position.coords.altitude);
@@ -182,9 +192,6 @@ const Home: React.FC<Props> = ({ navigation }) => {
         );
     };
 
-    useEffect(() => {
-        requestLocationPermission();
-    }, []);
 
     const requestLocationPermission = async () => {
         if (Platform.OS === 'android') {
@@ -211,42 +218,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
             getLocation();
         }
     };
-    // =============== done sensors =======
-
-    //     // database
-
-
-
-    //     const createDB = async () => {
-    //         const db: SQLiteDatabase | undefined = await getDBConnection();
-    //         if (db !== undefined) {
-    //             await createTable(db);
-    //             const data: sensorDataType = {
-    //                 timestamp: new Date().toISOString(),
-    //                 ax: accelerometerData.x,
-    //                 ay: accelerometerData.y,
-    //                 az: accelerometerData.z,
-    //                 pitch: pitchData,
-    //                 roll: rollData,
-    //                 azimuth: azimuthData,
-    //                 avx: gyroscopeData.x,
-    //                 avy: gyroscopeData.y,
-    //                 avz: gyroscopeData.z,
-    //                 mfx: magnetometerData.x,
-    //                 mfy: magnetometerData.y,
-    //                 mfz: magnetometerData.z,
-    //                 latitude: latitude,
-    //                 longitude: longitude,
-    //                 altitude: altitude,
-    //                 hacc: accuracy,
-    //             };
-    //             await insertData(db, data);
-    //             await db.close();
-    //             }
-    //
-    //
-    //
-    //     };
+    
     const data = {
         id: uuid,
         timestamp: new Date().toISOString(),
@@ -271,54 +243,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
     let intervalId: ReturnType<typeof setInterval>;
     const [timeoutId, setTimeoutID] = useState<ReturnType<typeof setTimeout> | undefined>();
     const [intervalOutId, setIntervalOutID] = useState<ReturnType<typeof setInterval> | undefined>();
-    //     // database
-    //     const createDB = async () => {
-    //         const db: SQLiteDatabase | undefined = await getDBConnection();
-    //
-    //             await createTable(db);
-    //             const data= {
-    //                 timestamp: new Date().toISOString(),
-    //                 ax: accelerometerData.x,
-    //                 ay: accelerometerData.y,
-    //                 az: accelerometerData.z,
-    //                 pitch: pitchData,
-    //                 roll: rollData,
-    //                 azimuth: azimuthData,
-    //                 avx: gyroscopeData.x,
-    //                 avy: gyroscopeData.y,
-    //                 avz: gyroscopeData.z,
-    //                 mfx: magnetometerData.x,
-    //                 mfy: magnetometerData.y,
-    //                 mfz: magnetometerData.z,
-    //                 latitude: latitude,
-    //                 longitude: longitude,
-    //                 altitude: altitude,
-    //                 hacc: accuracy,
-    //             };
-    //             await insertData(db, data);
-    //             await db.close();
-    //
-    //
-    //
-    //         try {
-    //             const response = await fetch('https://sensfit.nitk.ac.in/', {
-    //                 method: 'POST',
-    //                 headers: {
-    //                     'Content-Type': 'application/json',
-    //                 },
-    //                 body: JSON.stringify(data),
-    //             });
-    //
-    //             if (!response.ok) {
-    //                 throw new Error('Failed to store sensor data');
-    //             }
-    //
-    //             const result = await response.json();
-    //             console.log('Sensor data stored:', result);
-    //         } catch (error) {
-    //             console.error('Error storing sensor data:', error);
-    //         }
-    //     };
+    
 
     const startSensors = () => {
 
@@ -347,6 +272,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
             console.log('Stopped collecting data after 5 seconds');
         }, 5 * 1000);
         setTimeoutID(timeoutid);
+            startQueueProcessing();
     };
     const stopSensors = () => {
         if (intervalOutId) {
@@ -366,11 +292,9 @@ const Home: React.FC<Props> = ({ navigation }) => {
         }
         setIntervalOutID(undefined);
         setSensorsActive(false);
+        stopQueueProcessing();
     };
 
-    //set interval of 1 minutes after the sensors are started and updated the database
-    // after the sensors are stopped or the timeinterval is cleared the updation
-    // of database should be stopeed
 
     useEffect(() => {
         console.log('still sensors collection running');
@@ -411,46 +335,46 @@ const Home: React.FC<Props> = ({ navigation }) => {
 
     }, [sensorsActive]);
 
-
-    const postData = async () => {
-        try {
-            // instead of url paste the website url
-            const response = await axios.post('http://sensfit.nitk.ac.in/', {
-                userid: getAuth().currentUser?.uid,
-                timestamp: new Date().toISOString(),
-                ax: data.ax,
-                ay: accelerometerData.x,
-                az: accelerometerData.z,
-                pitch: pitchData,
-                roll: rollData,
-                azimuth: azimuthData,
-                avx: gyroscopeData.x,
-                avy: gyroscopeData.y,
-                avz: gyroscopeData.z,
-                mfx: magnetometerData.x,
-                mfy: magnetometerData.y,
-                mfz: magnetometerData.z,
-                latitude: latitude,
-                longitude: longitude,
-                altitude: altitude,
-                hacc: accuracy,
-            })
-            console.log('Data posted:', response.status);
-        }
-        catch (error : any) {
-            if (error.response) {
-                // The request was made and the server responded with a status code
-                console.log('Server responded with non-2xx status:', error.response.data);
-                console.log('Status code:', error.response.status);
-            } else if (error.request) {
-                // The request was made but no response was received
-                console.log('No response received:', error.request);
-            } else {
-                // Something happened in setting up the request that triggered an Error
-                console.error('Request failed:', error.message);
-            }
-        }
-    };
+//
+//     const postData = async () => {
+//         try {
+//             // instead of url paste the website url
+//             const response = await axios.post('http://10.0.2.2:8000/send_data/', {
+//                 userid: getAuth().currentUser?.uid,
+//                 timestamp: new Date().toISOString(),
+//                 ax: data.ax,
+//                 ay: accelerometerData.x,
+//                 az: accelerometerData.z,
+//                 pitch: pitchData,
+//                 roll: rollData,
+//                 azimuth: azimuthData,
+//                 avx: gyroscopeData.x,
+//                 avy: gyroscopeData.y,
+//                 avz: gyroscopeData.z,
+//                 mfx: magnetometerData.x,
+//                 mfy: magnetometerData.y,
+//                 mfz: magnetometerData.z,
+//                 latitude: latitude,
+//                 longitude: longitude,
+//                 altitude: altitude,
+//                 hacc: accuracy,
+//             })
+//             console.log('Data posted:', response.status);
+//         }
+//         catch (error : any) {
+//             if (error.response) {
+//                 // The request was made and the server responded with a status code
+//                 console.log('Server responded with non-2xx status:', error.response.data);
+//                 console.log('Status code:', error.response.status);
+//             } else if (error.request) {
+//                 // The request was made but no response was received
+//                 console.log('No response received:', error.request);
+//             } else {
+//                 // Something happened in setting up the request that triggered an Error
+//                 console.error('Request failed:', error.message);
+//             }
+//         }
+//     };
 
     useEffect(() => {
         let intervalId: ReturnType<typeof setInterval>;
@@ -475,6 +399,41 @@ const Home: React.FC<Props> = ({ navigation }) => {
 
     }, [sensorsActive]);
     //=============
+
+    
+
+
+
+//     charts
+
+     const [queue, setQueue] = useState<number[]>([]);
+        const [currentNumber, setCurrentNumber] = useState<number | null>(null);
+        const numberCounter = 0;
+
+
+
+const startQueueProcessing = () => {
+    const interval = setInterval(() => {
+        setCurrentNumber(ax);
+
+        setQueue((prevQueue) => {
+            const newNumber = currentNumber;
+            let updatedQueue = [...prevQueue, newNumber];
+            if (updatedQueue.length > 100) {
+                updatedQueue.shift(); // Remove the oldest number if the queue exceeds 100 numbers
+            }
+            return updatedQueue;
+        });
+    }, 1000); // Add a new number every second
+
+    // Save the interval ID so it can be cleared later
+    return interval;
+};
+const stopQueueProcessing = (intervalId) => {
+    clearInterval(intervalId);
+};
+
+
     return (
         <ScrollView>
             <View style={styleSheet.container}>
@@ -534,10 +493,52 @@ const Home: React.FC<Props> = ({ navigation }) => {
                 <TouchableOpacity onPress={logOut} style={styleSheet.btnTouchableOp}>
                     <Text style={styleSheet.btnText}>Logout</Text>
                 </TouchableOpacity>
-
-
-
+ <Text>Bezier Line Chart</Text>
+  <LineChart
+    data={{
+      labels: ["January", "February", "March", "April", "May", "June"],
+      datasets: [
+        {
+          data: [
+            Math.random() * 100,
+            Math.random() * 100,
+            Math.random() * 100,
+            Math.random() * 100,
+            Math.random() * 100,
+            Math.random() * 100
+          ]
+        }
+      ]
+    }}
+    width={Dimensions.get("window").width} // from react-native
+    height={220}
+    yAxisLabel="$"
+    yAxisSuffix="k"
+    yAxisInterval={1} // optional, defaults to 1
+    chartConfig={{
+      backgroundColor: "#e26a00",
+      backgroundGradientFrom: "#fb8c00",
+      backgroundGradientTo: "#ffa726",
+      decimalPlaces: 2, // optional, defaults to 2dp
+      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+      labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+      style: {
+        borderRadius: 16
+      },
+      propsForDots: {
+        r: "6",
+        strokeWidth: "2",
+        stroke: "#ffa726"
+      }
+    }}
+    bezier
+    style={{
+      marginVertical: 8,
+      borderRadius: 16
+    }}
+  />
             </View>
+
         </ScrollView>
     );
 };
