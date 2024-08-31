@@ -46,6 +46,11 @@ const HomeDrawer = () => {
                 name="Settings" 
                 component={Settings} 
             />
+
+            <Drawer.Screen 
+                name="SensorData" 
+                component={SensorData} 
+            />
         </Drawer.Navigator>
     );
 };
