@@ -12,6 +12,7 @@ import Settings from '../screens/Settings';
 import Profile from '../screens/Profile';
 import FontSize from '../constants/FontSize';
 import SensorData from '../screens/SensorData';
+import SensorCharts from '../screens/SensorCharts';
 const Drawer = createDrawerNavigator();
 const Stack = createNativeStackNavigator();
 
@@ -50,6 +51,10 @@ const HomeDrawer = () => {
             <Drawer.Screen 
                 name="SensorData" 
                 component={SensorData} 
+            />
+            <Drawer.Screen 
+                name="SensorCharts" 
+                component={SensorCharts} 
             />
         </Drawer.Navigator>
     );
