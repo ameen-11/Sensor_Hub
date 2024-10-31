@@ -454,23 +454,7 @@ const Home: React.FC<Props> = ({ navigation }) => {
 
   useEffect(() => {
     let intervalId: ReturnType<typeof setInterval>;
-    let timeoutId: ReturnType<typeof setTimeout>;
 
-    if (sensorsActive) {
-      intervalId = setInterval(() => {
-        console.log('Database call');
-        handleInsert();
-      }, 1000);
-      const timeout = setTimeout(() => {
-        stopSensors();
-
-        console.log("Stopped collecting data after 5 seconds");
-      }, 5000);
-      setTimeoutID(timeout);
-    }
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-      if (timeoutId) clearTimeout(timeoutId);
     };
 
   }, [sensorsActive]);
