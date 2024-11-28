@@ -1,72 +1,72 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { View, ScrollView, StyleSheet, RefreshControl } from "react-native";
-import axios from "axios";
-import auth from "@react-native-firebase/auth";
+import { View, ScrollView, StyleSheet, RefreshControl, Text } from "react-native";
+import { getDBConnection, getData } from "../db-service";
 import Spacing from "../constants/Spacing";
 import Chart from "../components/Chart";
-
-interface SensorDataResponse {
-  timestamp: string;
-  userid: string;
-  ax: number;
-  ay: number;
-  az: number;
-  pitch: number;
-  roll: number;
-  azimuth: number;
-  avx: number;
-  avy: number;
-  avz: number;
-  mfx: number;
-  mfy: number;
-  mfz: number;
-  latitude: number;
-  longitude: number;
-  altitude: number;
-  hacc: number;
-}
+import { SQLiteDatabase } from "react-native-sqlite-storage";
 
 const SensorCharts = () => {
-  const [data, setData] = useState<SensorDataResponse[] | null>(null);
+  const [sensorDataFromDatabase, setData] = useState<SensorDataResponse[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const getData = async () => {
+  const presentData = async () => {
     try {
-      const userId = auth().currentUser?.uid;
-      if (!userId) {
-        console.error("User ID is not available");
+      const db: SQLiteDatabase | undefined = await getDBConnection(); // Include undefined as a possible return type
+      if (db) {
+        const d = await getData(db); // Assuming getData accepts a valid SQLiteDatabase
+        setData(d);
+        //setData(d);
+      } else {
+        console.error("Database connection is undefined");
         return;
       }
-
-      const response = await axios.get<{ data: SensorDataResponse[] }>(
-        "http://10.0.2.2:8000/get_data",
-        { params: { userid: userId } }
-      );
-
-      setData(response.data.data);
-    } catch (error: any) {
-      console.error("Error fetching data:", error.message);
+    } catch (error) {
+      console.error("Error in presentData:", error);
     } finally {
-      setRefreshing(false);
+      setRefreshing(false); // Ensure refreshing state is stopped
     }
+    //server calls
+    //  try {
+    //    const userId = auth().currentUser?.uid;
+    //    if (!userId) {
+    //      console.error("User ID is not available");
+    //      return;
+    //    }
+
+    //    const response = await axios.get<{ data: SensorDataResponse[] }>(
+    //      "http://10.0.2.2:8000/get_data",
+    //      { params: { userid: userId } }
+    //    );
+
+    //    setData(response.data.data);
+    //  } catch (error: any) {
+    //    console.error("Error fetching data:", error.message);
+    //  } finally {
+    //    setRefreshing(false);
+    //  }
   };
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
-    getData();
+    presentData();
   }, []);
 
   useEffect(() => {
-    getData();
+    presentData();
   }, []);
 
   // Prepare data for the chart
-  const prepareChartData = (sensorData: SensorDataResponse[], key: keyof SensorDataResponse) => {
+  const prepareChartData = (sensorData: SensorDataResponse[] | undefined, key: keyof SensorDataResponse) => {
+    if (!sensorData || sensorData.length === 0) {
+      // Return a placeholder data point if no data is available
+      return [{ value: 0, label: "nil" }];
+    }
     return sensorData.map((item) => ({
       value: item[key] as number,
       label: new Date(item.timestamp).toLocaleTimeString(), // Convert timestamp to time
     }));
   };
+
 
   return (
     <ScrollView
@@ -76,25 +76,26 @@ const SensorCharts = () => {
       }
     >
       <View>
-        {data && (
+        {sensorDataFromDatabase && sensorDataFromDatabase.length > 0 ? (
           <>
-            <Chart data={prepareChartData(data, "ax")} title="Accelerometer X (ax)" />
-            <Chart data={prepareChartData(data, "ay")} title="Accelerometer Y (ay)" />
-            <Chart data={prepareChartData(data, "az")} title="Accelerometer Z (az)" />
-            <Chart data={prepareChartData(data, "pitch")} title="Pitch" />
-            <Chart data={prepareChartData(data, "roll")} title="Roll" />
-            <Chart data={prepareChartData(data, "azimuth")} title="Azimuth" />
-            <Chart data={prepareChartData(data, "avx")} title="Angular Velocity X (avx)" />
-            <Chart data={prepareChartData(data, "avy")} title="Angular Velocity Y (avy)" />
-            <Chart data={prepareChartData(data, "avz")} title="Angular Velocity Z (avz)" />
-            <Chart data={prepareChartData(data, "mfx")} title="Magnetic Field X (mfx)" />
-            <Chart data={prepareChartData(data, "mfy")} title="Magnetic Field Y (mfy)" />
-            <Chart data={prepareChartData(data, "mfz")} title="Magnetic Field Z (mfz)" />
-            <Chart data={prepareChartData(data, "latitude")} title="Latitude" />
-            <Chart data={prepareChartData(data, "longitude")} title="Longitude" />
-            <Chart data={prepareChartData(data, "altitude")} title="Altitude" />
-            <Chart data={prepareChartData(data, "hacc")} title="Horizontal Accuracy (hacc)" />
+            <Chart data={prepareChartData(sensorDataFromDatabase, "ax")} title="Accelerometer X (ax)" />
+            <Chart data={prepareChartData(sensorDataFromDatabase, "ay")} title="Accelerometer Y (ay)" />
+            <Chart data={prepareChartData(sensorDataFromDatabase, "az")} title="Accelerometer Z (az)" />
+            <Chart data={prepareChartData(sensorDataFromDatabase, "pitch")} title="Pitch" />
+            <Chart data={prepareChartData(sensorDataFromDatabase, "roll")} title="Roll" />
+            <Chart data={prepareChartData(sensorDataFromDatabase, "azimuth")} title="Azimuth" />
+            <Chart data={prepareChartData(sensorDataFromDatabase, "avx")} title="Angular Velocity X (avx)" />
+            <Chart data={prepareChartData(sensorDataFromDatabase, "avy")} title="Angular Velocity Y (avy)" />
+            <Chart data={prepareChartData(sensorDataFromDatabase, "avz")} title="Angular Velocity Z (avz)" />
+            <Chart data={prepareChartData(sensorDataFromDatabase, "mfx")} title="Magnetic Field X (mfx)" />
+            <Chart data={prepareChartData(sensorDataFromDatabase, "mfy")} title="Magnetic Field Y (mfy)" />
+            <Chart data={prepareChartData(sensorDataFromDatabase, "mfz")} title="Magnetic Field Z (mfz)" />
           </>
+        ) : (
+          // Render "No data available" message when no data is present
+          <View style={styles.container}>
+            <Text>Data Loading</Text>
+          </View>
         )}
       </View>
     </ScrollView>
@@ -107,6 +108,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: Spacing,
   },
+
 });
 
 export default SensorCharts;
