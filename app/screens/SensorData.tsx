@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, ScrollView, RefreshControl } from "react-native
 import axios from "axios";
 import auth from "@react-native-firebase/auth";
 import Spacing from "../constants/Spacing";
+import { SQLiteDatabase } from "react-native-sqlite-storage";
+import { getDBConnection, getData } from "../db-service";
 
 // Define the structure of the response data
 interface SensorDataResponse {
@@ -27,36 +29,76 @@ interface SensorDataResponse {
 }
 
 const SensorData: React.FC = () => {
-  const [data, setData] = useState<SensorDataResponse[] | null>(null);
+
+  const [sensorDataFromDatabase, setData] = useState<SensorDataResponse[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const getData = async () => {
+  const presentData = async () => {
     try {
-      const userId = auth().currentUser?.uid;
-      if (!userId) {
-        console.error('User ID is not available');
+      const db: SQLiteDatabase | undefined = await getDBConnection(); // Include undefined as a possible return type
+      if (db) {
+        const d = await getData(db); // Assuming getData accepts a valid SQLiteDatabase
+        setData(d);
+        //setData(d);
+      } else {
+        console.error("Database connection is undefined");
         return;
       }
-
-      const response = await axios.get<{ data: SensorDataResponse[] }>('http://10.0.2.2:8000/get_data', {
-        params: { userid: userId },
-      });
-      
-      setData(response.data.data);
-    } catch (error: any) {
-      console.error('Error fetching data:', error.message);
+    } catch (error) {
+      console.error("Error in presentData:", error);
     } finally {
-      setRefreshing(false);
+      setRefreshing(false); // Ensure refreshing state is stopped
     }
-  };
+    //server calls
+    //  try {
+    //    const userId = auth().currentUser?.uid;
+    //    if (!userId) {
+    //      console.error("User ID is not available");
+    //      return;
+    //    }
 
+    //    const response = await axios.get<{ data: SensorDataResponse[] }>(
+    //      "http://10.0.2.2:8000/get_data",
+    //      { params: { userid: userId } }
+    //    );
+
+    //    setData(response.data.data);
+    //  } catch (error: any) {
+    //    console.error("Error fetching data:", error.message);
+    //  } finally {
+    //    setRefreshing(false);
+    //  }
+  };
+//  const [data, setData] = useState<SensorDataResponse[] | null>(null);
+//  const [refreshing, setRefreshing] = useState(false);
+//
+//  const getData = async () => {
+//    try {
+//      const userId = auth().currentUser?.uid;
+//      if (!userId) {
+//        console.error('User ID is not available');
+//        return;
+//      }
+//
+//      const response = await axios.get<{ data: SensorDataResponse[] }>('http://10.0.2.2:8000/get_data', {
+//        params: { userid: userId },
+//      });
+//      
+//      setData(response.data.data);
+//    } catch (error: any) {
+//      console.error('Error fetching data:', error.message);
+//    } finally {
+//      setRefreshing(false);
+//    }
+//  };
+//
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
-    getData();
+    presentData();
   }, []);
 
   useEffect(() => {
-    getData();
+    presentData();
   }, []);
 
   return (
@@ -73,7 +115,6 @@ const SensorData: React.FC = () => {
         <View style={styles.table}>
           <View style={styles.tableRow}>
             <Text style={styles.tableHeader}>Timestamp</Text>
-            <Text style={styles.tableHeader}>User ID</Text>
             <Text style={styles.tableHeader}>AX</Text>
             <Text style={styles.tableHeader}>AY</Text>
             <Text style={styles.tableHeader}>AZ</Text>
@@ -91,10 +132,9 @@ const SensorData: React.FC = () => {
             <Text style={styles.tableHeader}>Altitude</Text>
             <Text style={styles.tableHeader}>HACC</Text>
           </View>
-          {data && data.map((item, index) => (
+          {sensorDataFromDatabase && sensorDataFromDatabase.map((item, index) => (
             <View key={index} style={styles.tableRow}>
               <Text style={styles.tableCell}>{item.timestamp}</Text>
-              <Text style={styles.tableCell}>{item.userid}</Text>
               <Text style={styles.tableCell}>{item.ax}</Text>
               <Text style={styles.tableCell}>{item.ay}</Text>
               <Text style={styles.tableCell}>{item.az}</Text>

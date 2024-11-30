@@ -1,3 +1,26 @@
+interface SensorDataResponse {
+  timestamp: string;
+  id: string;
+  ax: number;
+  ay: number;
+  az: number;
+  pitch: number;
+  roll: number;
+  azimuth: number;
+  avx: number;
+  avy: number;
+  avz: number;
+  mfx: number;
+  mfy: number;
+  mfz: number;
+  latitude: number;
+  longitude: number;
+  altitude: number;
+  hacc: number;
+  synced: boolean;
+}
+
+
 interface sensorDataType {
   timestamp: string;
   ax: number | null;

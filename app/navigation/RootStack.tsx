@@ -8,6 +8,7 @@ import SensorMap from '../screens/SensorMap';
 import Header from '../components/Header';
 import Colors from '../constants/Colors';
 import Home from '../screens/Home';
+//import Home from '../screens/fix';
 import Settings from '../screens/Settings';
 import Profile from '../screens/Profile';
 import FontSize from '../constants/FontSize';
